@@ -1,0 +1,11 @@
+{
+  "name": "Тарих Сканер · Ақтөбе",
+  "short_name": "Тарих Сканер",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1f1a15",
+  "theme_color": "#1f1a15",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

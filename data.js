@@ -125,8 +125,11 @@ window.OBJECTS = [
     text: "Дом почти не менялся с 1912 года, на нём сохранилась старая деревянная резьба. По одной из версий, здесь жила семья первых поселенцев." }
 ];
 
-// Пилот: пока работаем только с двумя проспектами. Остальные объекты сохранены в ALL_OBJECTS на будущее.
+// Проект (1-й этап): два проспекта. Остальные объекты тоже распознаются и показываются,
+// но в каталоге идут отдельным разделом «Другие».
 window.ZONES = { abulkhair_ave: "пр. Абулхаир хана", moldagulova_ave: "пр. Молдагуловой" };
+window.ZONE_NAMES = { ...window.ZONES, center: "Центр", old: "Старый город" };
 window.ALL_OBJECTS = window.OBJECTS;
 window.OBJECTS = window.ALL_OBJECTS.filter(o => o.zone in window.ZONES);
+window.OTHER_OBJECTS = window.ALL_OBJECTS.filter(o => !(o.zone in window.ZONES));
 window.TYPES = { monument: "Памятник", building: "Здание", street: "Улица", place: "Место" };
