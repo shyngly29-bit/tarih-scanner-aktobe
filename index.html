@@ -103,7 +103,7 @@ try { seen = new Set(JSON.parse(localStorage.getItem("seen") || "[]")); } catch 
 function markSeen(id){ seen.add(id); try{ localStorage.setItem("seen", JSON.stringify([...seen])); }catch(e){} renderProgress(); renderList(); }
 function renderProgress(){
   const s = OBJECTS.filter(o => seen.has(o.id)).length;
-  $("prog").innerHTML = `🏅 Изучено объектов: <b>${s} из ${OBJECTS.length}</b> · Старый город: ${OBJECTS.filter(o=>o.zone==="old").length}, Центр: ${OBJECTS.filter(o=>o.zone==="center").length}`;
+  $("prog").innerHTML = `🏅 Изучено объектов: <b>${s} из ${OBJECTS.length}</b> · ` + Object.entries(ZONES).map(([k,v]) => `${v}: ${OBJECTS.filter(o=>o.zone===k).length}`).join(", ");
 }
 
 // ---- вкладки ----
