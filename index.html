@@ -63,8 +63,17 @@ svg{display:block;flex:none}
 .brand{min-width:0;flex:1}
 .brand b{display:block;font:600 16px/1.15 var(--f-display);letter-spacing:-.01em}
 .brand span{font-size:12.5px;color:var(--muted)}
-.ring{display:flex;align-items:center;gap:8px;padding:4px 10px 4px 4px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:13px;font-weight:600;white-space:nowrap}
+.ring{position:relative;width:40px;height:40px;flex:none;display:grid;place-items:center}
+.ring svg{position:absolute;inset:0}
 .ring svg circle{transition:stroke-dashoffset .5s ease}
+.ring span{position:relative;font-size:10.5px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.lang{display:flex;padding:3px;border-radius:12px;background:var(--paper-2);flex:none}
+.lang button{min-width:40px;height:34px;padding:0 6px;border-radius:9px;font-size:12px;font-weight:700;letter-spacing:.02em;color:var(--muted)}
+.lang button[aria-pressed=true]{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+.brand b,.brand span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:440px){.brand span{display:none}.brand b{font-size:15px}.top-in{gap:10px}}
+@media (max-width:400px){.mark{display:none}}
+@media (max-width:350px){.lang button{min-width:34px;padding:0 3px;font-size:11px}}
 
 /* ===================== КАРКАС ===================== */
 .app{max-width:1180px;margin:0 auto;padding:4px calc(16px + var(--sr)) calc(var(--nav) + var(--sb) + 20px) calc(16px + var(--sl))}
@@ -281,18 +290,19 @@ svg{display:block;flex:none}
     <div class="mark" aria-hidden="true">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 4c-4 0-6 3.4-4 6 1.4 1.8 4 1 3.6-1M12 4c4 0 6 3.4 4 6-1.4 1.8-4 1-3.6-1M12 20c-4 0-6-3.4-4-6 1.4-1.8 4-1 3.6 1M12 20c4 0 6-3.4 4-6-1.4-1.8-4-1-3.6 1"/></svg>
     </div>
-    <div class="brand"><b>Тарих Сканер</b><span>Ақтөбе · история города</span></div>
-    <div class="ring" id="ring" role="img" aria-label="Прогресс изучения">
-      <svg width="28" height="28" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15" fill="none" stroke="var(--line)" stroke-width="4"/><circle id="ringArc" cx="18" cy="18" r="15" fill="none" stroke="var(--lapis)" stroke-width="4" stroke-linecap="round" stroke-dasharray="94.25" stroke-dashoffset="94.25" transform="rotate(-90 18 18)"/></svg>
-      <span id="ringTxt">0/0</span>
+    <div class="brand"><b>Тарих Сканер</b><span data-i18n="appSub">Ақтөбе · история города</span></div>
+    <div class="ring" id="ring" role="img" aria-label="">
+      <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="none" stroke="var(--line)" stroke-width="3.5"/><circle id="ringArc" cx="20" cy="20" r="17" fill="none" stroke="var(--lapis)" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="106.8" stroke-dashoffset="106.8" transform="rotate(-90 20 20)"/></svg>
+      <span id="ringTxt" aria-hidden="true">0/0</span>
     </div>
+    <div class="lang" id="lang" role="group" aria-label="Язык"></div>
   </div>
 </header>
 
 <main class="app" id="app">
   <!-- ===================== СКАНЕР ===================== -->
   <section class="panel scan" id="scan" role="tabpanel" aria-labelledby="tab-scan">
-    <h1 class="sr">Сканер исторических объектов Ақтөбе</h1>
+    <h1 class="sr" data-i18n="h1">Сканер исторических объектов Ақтөбе</h1>
     <div class="vp" id="vp" data-state="loading">
       <video id="video" playsinline muted autoplay class="hidden" aria-hidden="true"></video>
       <img id="shot" class="shot hidden" alt="Выбранная фотография">
@@ -303,54 +313,54 @@ svg{display:block;flex:none}
         <div class="sweep"></div>
       </div>
       <div class="state">
-        <span class="pill" id="pill" role="status" aria-live="polite"><span class="dot" id="pillDot"></span><span id="pillTxt">Загрузка модели…</span></span>
-        <button class="iconbtn hidden" id="vpClose" aria-label="Сбросить фото"><svg width="20" height="20"><use href="#i-x"/></svg></button>
+        <span class="pill" id="pill" role="status" aria-live="polite"><span class="dot" id="pillDot"></span><span id="pillTxt">…</span></span>
+        <button class="iconbtn hidden" id="vpClose" data-i18n-aria="resetPhoto" aria-label=""><svg width="20" height="20"><use href="#i-x"/></svg></button>
       </div>
       <div class="center" id="center"></div>
       <div class="meter hidden" id="meter" aria-hidden="true">
-        <div class="row"><span id="mName">Ищу объект в рамке</span><span id="mPct">0%</span></div>
+        <div class="row"><span id="mName"></span><span id="mPct">0%</span></div>
         <div class="bar"><i id="mBar"></i></div>
-        <small id="mHint">Карточка откроется при уверенности от 85%</small>
+        <small id="mHint" data-i18n="meterHint"></small>
       </div>
     </div>
 
     <div class="ctrl">
       <button class="btn btn-primary" id="camBtn" aria-pressed="false" disabled>
-        <svg width="22" height="22" id="camIco"><use href="#i-cam"/></svg><span id="camTxt">Сканировать</span>
+        <svg width="22" height="22" id="camIco"><use href="#i-cam"/></svg><span id="camTxt"></span>
       </button>
-      <label class="btn btn-ghost btn-sq" id="photoLbl" aria-label="Распознать фото из галереи" title="Фото из галереи" tabindex="0">
+      <label class="btn btn-ghost btn-sq" id="photoLbl" data-i18n-aria="photoAria" data-i18n-title="photoAria" aria-label="" tabindex="0">
         <svg width="22" height="22"><use href="#i-img"/></svg>
         <input type="file" id="photoIn" accept="image/*" class="sr" tabindex="-1">
       </label>
     </div>
-    <div class="tip"><svg width="18" height="18"><use href="#i-info"/></svg><span>Держите памятник или табличку внутри рамки 1–2 секунды. Объекты проекта — проспекты Әбілқайыр хана и Әлии Молдағұловой.</span></div>
+    <div class="tip"><svg width="18" height="18"><use href="#i-info"/></svg><span data-i18n="tip"></span></div>
     <input type="file" id="modelIn" multiple accept=".json,.bin" class="sr" tabindex="-1">
 
-    <div class="eyebrow">Недавно изученные</div>
+    <div class="eyebrow" data-i18n="recent"></div>
     <div id="recent"></div>
   </section>
 
   <!-- ===================== КАТАЛОГ ===================== -->
   <section class="panel" id="catalog" role="tabpanel" aria-labelledby="tab-cat" hidden>
     <div class="cat-head">
-      <h2>Коллекция мест</h2>
-      <p id="catSub">Памятники, здания и улицы с историей</p>
+      <h2 data-i18n="catT"></h2>
+      <p id="catSub" data-i18n="catX"></p>
     </div>
     <div class="search" role="search">
       <svg class="s-ic" width="20" height="20" aria-hidden="true"><use href="#i-search"/></svg>
-      <label for="q" class="sr">Поиск по каталогу</label>
-      <input id="q" type="search" placeholder="Название, улица, год…" autocomplete="off" enterkeyhint="search">
-      <button class="clear hidden" id="qClear" aria-label="Очистить поиск"><svg width="18" height="18"><use href="#i-x"/></svg></button>
+      <label for="q" class="sr" data-i18n="searchLbl"></label>
+      <input id="q" type="search" placeholder="" data-i18n-ph="searchPh" autocomplete="off" enterkeyhint="search">
+      <button class="clear hidden" id="qClear" data-i18n-aria="clear" aria-label=""><svg width="18" height="18"><use href="#i-x"/></svg></button>
     </div>
-    <div class="chips" id="chips" role="group" aria-label="Фильтр каталога"></div>
+    <div class="chips" id="chips" role="group" data-i18n-aria="filterLbl" aria-label=""></div>
     <div id="list"></div>
   </section>
 </main>
 
 <nav class="nav" aria-label="Разделы">
   <div class="nav-in" role="tablist">
-    <button role="tab" id="tab-scan" aria-controls="scan" aria-selected="true"><svg width="20" height="20"><use href="#i-scan"/></svg>Сканер</button>
-    <button role="tab" id="tab-cat" aria-controls="catalog" aria-selected="false"><svg width="20" height="20"><use href="#i-book"/></svg>Каталог</button>
+    <button role="tab" id="tab-scan" aria-controls="scan" aria-selected="true"><svg width="20" height="20"><use href="#i-scan"/></svg><span data-i18n="tabScan"></span></button>
+    <button role="tab" id="tab-cat" aria-controls="catalog" aria-selected="false"><svg width="20" height="20"><use href="#i-book"/></svg><span data-i18n="tabCat"></span></button>
   </div>
 </nav>
 
@@ -362,6 +372,7 @@ svg{display:block;flex:none}
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.5/dist/teachablemachine-image.min.js"></script>
 <script src="data.js"></script>
+<script src="i18n.js"></script>
 <script>
 "use strict";
 const $ = id => document.getElementById(id);
@@ -372,8 +383,47 @@ const ico = (id, s = 20) => `<svg width="${s}" height="${s}" aria-hidden="true">
 const typeIco = (o, s = 22) => `<span class="ti ${o.type === "street" ? "street" : ""}" aria-hidden="true">${ico("t-" + o.type, s)}</span>`;
 const isDesktop = () => matchMedia("(min-width:1024px)").matches;
 
+/* ---------- язык ---------- */
+let lang = "ru";
+try { lang = localStorage.getItem("lang") || ""; } catch (e) {}
+if (!UI[lang]) { const n = (navigator.language || "").toLowerCase(); lang = n.startsWith("kk") ? "kk" : n.startsWith("ru") ? "ru" : n.startsWith("en") ? "en" : "kk"; }
+const t = (k, ...a) => { const v = (UI[lang] && UI[lang][k]) ?? UI.ru[k]; return typeof v === "function" ? v(...a) : v; };
+const zoneName = z => t("zones")[z] || z;
+const typeName = ty => t("types")[ty] || ty;
+// Объект на текущем языке; second — название на втором языке под заголовком
+function L(o) {
+  const tr = (OBJ_I18N[o.id] || {})[lang] || {};
+  const base = lang === "ru" ? o : { ...o, ...tr };
+  return {
+    name: base.name || o.name, place: base.place || o.place, year: tr.year || o.year,
+    oldNames: lang === "ru" ? o.oldNames : (tr.oldNames || o.oldNames), text: base.text || o.text,
+    second: lang === "kk" ? o.name : o.nameKk, secondLang: lang === "kk" ? "ru" : "kk",
+  };
+}
+function setLang(l) {
+  lang = l;
+  try { localStorage.setItem("lang", l); } catch (e) {}
+  applyStatic(); renderLang(); renderProgress(); renderRecent(); renderChips(); renderList();
+  setState($("vp").dataset.state, lastStateOpts);
+  if (cardOpen && cardId) openCard(cardId, cardProb, true);
+}
+function applyStatic() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i18n]").forEach(el => el.textContent = t(el.dataset.i18n));
+  document.querySelectorAll("[data-i18n-aria]").forEach(el => el.setAttribute("aria-label", t(el.dataset.i18nAria)));
+  document.querySelectorAll("[data-i18n-title]").forEach(el => el.setAttribute("title", t(el.dataset.i18nTitle)));
+  document.querySelectorAll("[data-i18n-ph]").forEach(el => el.setAttribute("placeholder", t(el.dataset.i18nPh)));
+  $("lang").setAttribute("aria-label", t("langLbl"));
+  if (!$("meter").classList.contains("hidden") && !$("mName").dataset.hit) $("mName").textContent = t("meterSearch");
+  updateCamBtn();
+}
+function renderLang() {
+  $("lang").innerHTML = Object.entries(LANGS).map(([k, v]) => `<button lang="${k}" data-l="${k}" aria-pressed="${k === lang}">${v}</button>`).join("");
+  $("lang").querySelectorAll("button").forEach(b => b.onclick = () => setLang(b.dataset.l));
+}
+
 let model = null, stream = null, running = false, busy = false, lastId = null, streak = 0;
-let photoURL = null, cardOpen = false, lastFocus = null, loopTimer = null;
+let photoURL = null, cardOpen = false, cardId = null, cardProb = null, lastFocus = null, loopTimer = null, lastStateOpts = {};
 
 /* ---------- прогресс (localStorage, порядок = история изучения) ---------- */
 let seen = [];
@@ -387,85 +437,73 @@ function markSeen(id) {
 function renderProgress() {
   const done = OBJECTS.filter(o => isSeen(o.id)).length, total = OBJECTS.length;
   $("ringTxt").textContent = `${done}/${total}`;
-  $("ringArc").setAttribute("stroke-dashoffset", (94.25 * (1 - done / Math.max(total, 1))).toFixed(2));
-  $("ring").setAttribute("aria-label", `Изучено ${done} из ${total} объектов проекта`);
+  $("ringArc").setAttribute("stroke-dashoffset", (106.8 * (1 - done / Math.max(total, 1))).toFixed(2));
+  $("ring").setAttribute("aria-label", t("progress", done, total));
+  $("ring").title = t("progress", done, total);
 }
 function renderRecent() {
   const ids = seen.slice(-6).reverse();
   $("recent").innerHTML = ids.length
-    ? `<div class="recent">${ids.map(id => { const o = BY_ID[id]; return `<button class="rchip" data-id="${o.id}">${typeIco(o, 18)}<span><b>${esc(o.name)}</b><small>${esc(ZONE_NAMES[o.zone])}</small></span></button>`; }).join("")}</div>`
-    : `<div class="empty-mini">Здесь появятся объекты, которые вы распознаете или откроете в каталоге.</div>`;
+    ? `<div class="recent">${ids.map(id => { const o = BY_ID[id], l = L(o); return `<button class="rchip" data-id="${o.id}">${typeIco(o, 18)}<span><b>${esc(l.name)}</b><small>${esc(zoneName(o.zone))}</small></span></button>`; }).join("")}</div>`
+    : `<div class="empty-mini">${esc(t("recentEmpty"))}</div>`;
   $("recent").querySelectorAll(".rchip").forEach(b => b.onclick = () => openCard(b.dataset.id));
 }
 
 /* ---------- состояния экрана сканера ---------- */
 const STATES = {
-  loading:  { pill: "Загрузка модели…", spin: true },
-  idle:     { pill: "Готов к сканированию" },
-  camera:   { pill: "Сканирую" },
-  analyzing:{ pill: "Анализ фото…", spin: true },
-  found:    { pill: "Объект распознан" },
-  nomatch:  { pill: "Не распознано" },
-  error:    { pill: "Ошибка" },
+  loading: { pill: "stLoading", spin: true }, idle: { pill: "stIdle" }, camera: { pill: "stCamera" },
+  analyzing: { pill: "stAnalyzing", spin: true }, found: { pill: "stFound" }, nomatch: { pill: "stNomatch" }, error: { pill: "stError" },
 };
+// opts: { title, text, actions: [[act, icon, labelKey, style]] } — ключи переводов, чтобы экран пересобирался при смене языка
 function setState(s, opts = {}) {
+  lastStateOpts = opts;
   const vp = $("vp"); vp.dataset.state = s;
-  $("pillTxt").textContent = opts.pill || STATES[s].pill;
+  $("pillTxt").textContent = t(STATES[s].pill);
   $("pillDot").className = STATES[s].spin ? "spin" : "dot";
   const live = s === "camera" || s === "analyzing" || s === "found" || s === "nomatch";
   $("meter").classList.toggle("hidden", !(s === "camera" || s === "analyzing"));
   $("vpClose").classList.toggle("hidden", !(s === "nomatch" || (s === "found" && !running && photoURL)));
   const c = $("center");
-  if (s === "loading") c.innerHTML = centerHTML("i-hist", "Подготавливаем модель", "Загружаем нейросеть Teachable Machine. Это занимает несколько секунд.");
-  else if (s === "idle") c.innerHTML = centerHTML("i-scan", "Наведите камеру на объект", "Памятник, здание или табличка улицы — и откроется их история.");
-  else if (s === "nomatch") c.innerHTML = centerHTML("i-alert", "Объект не распознан", opts.text || "Попробуйте другой ракурс: объект в центре, без людей в кадре.", `<button class="btn btn-light" data-act="photo">${ico("i-img")}Другое фото</button><button class="btn btn-line" data-act="reset">Сбросить</button>`);
-  else if (s === "error") c.innerHTML = centerHTML("i-alert", opts.title || "Что-то пошло не так", opts.text || "", opts.actions || "");
+  if (s === "loading") c.innerHTML = centerHTML("i-hist", t("loadT"), t("loadX"));
+  else if (s === "idle") c.innerHTML = centerHTML("i-scan", t("idleT"), t("idleX"));
+  else if (s === "nomatch") c.innerHTML = centerHTML("i-alert", t("nomT"), t(opts.text || "nomLow"), [["photo", "i-img", "otherPhoto", "light"], ["reset", null, "reset", "line"]]);
+  else if (s === "error") c.innerHTML = centerHTML("i-alert", opts.titleRaw || t(opts.title || "stError"), opts.textRaw || t(opts.text || ""), opts.actions || []);
   else c.innerHTML = "";
   c.classList.toggle("hidden", live && s !== "nomatch");
   c.querySelectorAll("[data-act]").forEach(b => b.onclick = () => ACTIONS[b.dataset.act]());
   updateCamBtn();
 }
-function centerHTML(icon, title, text, acts = "") {
-  return `<div><div class="glyph">${ico(icon, 26)}</div><h2>${esc(title)}</h2><p>${esc(text)}</p>${acts ? `<div class="acts">${acts}</div>` : ""}</div>`;
+function centerHTML(icon, title, text, acts = []) {
+  const btns = acts.map(([a, i, k, st]) => `<button class="btn btn-${st}" data-act="${a}">${i ? ico(i) : ""}${esc(t(k))}</button>`).join("");
+  return `<div><div class="glyph">${ico(icon, 26)}</div><h2>${esc(title)}</h2><p>${esc(text)}</p>${btns ? `<div class="acts">${btns}</div>` : ""}</div>`;
 }
 const ACTIONS = {
-  photo: () => $("photoIn").click(),
-  reset: () => resetView(),
-  retry: () => loadModel(),
-  reload: () => location.reload(),
-  modelfiles: () => $("modelIn").click(),
+  photo: () => $("photoIn").click(), reset: () => resetView(), retry: () => loadModel(),
+  reload: () => location.reload(), modelfiles: () => $("modelIn").click(),
 };
 function updateCamBtn() {
   const b = $("camBtn");
   b.disabled = !model;
   b.setAttribute("aria-pressed", running ? "true" : "false");
-  $("camTxt").textContent = running ? "Остановить" : "Сканировать";
+  $("camTxt").textContent = t(running ? "stop" : "scan");
   $("camIco").innerHTML = `<use href="#${running ? "i-stop" : "i-cam"}"/>`;
 }
 
 /* ---------- модель ---------- */
 async function loadModel() {
-  if (!window.tmImage) {
-    setState("error", { title: "Нет подключения к интернету", text: "Библиотеки ИИ не загрузились. Каталог доступен офлайн, а для распознавания нужен интернет.", actions: `<button class="btn btn-light" data-act="reload">${ico("i-refresh")}Обновить</button>` });
-    return;
-  }
+  if (!window.tmImage) { setState("error", { title: "noNetT", text: "noNetX", actions: [["reload", "i-refresh", "reload", "light"]] }); return; }
   setState("loading");
-  try {
-    model = await tmImage.load("model/model.json", "model/metadata.json");
-    setState("idle");
-  } catch (e) {
-    model = null;
-    setState("error", { title: "Модель не загрузилась", text: "Проверьте интернет и попробуйте ещё раз. Можно загрузить файлы модели вручную.", actions: `<button class="btn btn-light" data-act="retry">${ico("i-refresh")}Повторить</button><button class="btn btn-line" data-act="modelfiles">${ico("i-upload")}Файлы модели</button>` });
-  }
+  try { model = await tmImage.load("model/model.json", "model/metadata.json"); setState("idle"); }
+  catch (e) { model = null; setState("error", { title: "modelErrT", text: "modelErrX", actions: [["retry", "i-refresh", "retry", "light"], ["modelfiles", "i-upload", "modelFiles", "line"]] }); }
 }
 $("modelIn").onchange = async e => {
   const f = [...e.target.files], get = n => f.find(x => x.name.toLowerCase().includes(n));
   const mj = get("model.json"), wb = get(".bin"), md = get("metadata");
   e.target.value = "";
-  if (!mj || !wb || !md) { toast("Нужны три файла: model.json, weights.bin, metadata.json"); return; }
+  if (!mj || !wb || !md) { toast(t("modelFilesNeed")); return; }
   setState("loading");
-  try { model = await tmImage.loadFromFiles(mj, wb, md); setState("idle"); toast("Модель загружена из файлов"); }
-  catch (err) { setState("error", { title: "Файлы модели не подошли", text: err.message, actions: `<button class="btn btn-light" data-act="retry">${ico("i-refresh")}Загрузить снова</button>` }); }
+  try { model = await tmImage.loadFromFiles(mj, wb, md); setState("idle"); toast(t("modelFilesOk")); }
+  catch (err) { setState("error", { title: "modelFilesBad", textRaw: err.message, actions: [["retry", "i-refresh", "loadAgain", "light"]] }); }
 };
 async function classify(el) {
   const preds = await model.predict(el);
@@ -473,19 +511,18 @@ async function classify(el) {
   return preds[0];
 }
 function showMeter(top) {
-  const o = BY_ID[top.className], p = Math.round(top.probability * 100);
+  const o = BY_ID[top.className], p = Math.round(top.probability * 100), hit = o && top.probability >= 0.4;
   $("mBar").style.width = (o ? p : 0) + "%";
   $("mPct").textContent = o ? p + "%" : "—";
-  $("mName").textContent = o && top.probability >= 0.4 ? o.name : "Ищу объект в рамке";
+  $("mName").textContent = hit ? L(o).name : t("meterSearch");
+  $("mName").dataset.hit = hit ? "1" : "";
 }
 
 /* ---------- камера ---------- */
 async function startCam() {
   if (!model || running) return;
   clearPhoto();
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    camError({ name: window.isSecureContext ? "NotFoundError" : "InsecureError" }); return;
-  }
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { camError({ name: window.isSecureContext ? "NotFoundError" : "InsecureError" }); return; }
   try {
     stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
     const v = $("video"); v.srcObject = stream; v.classList.remove("hidden");
@@ -496,18 +533,13 @@ async function startCam() {
   } catch (e) { stopCam(); camError(e); }
 }
 function camError(e) {
-  const map = {
-    NotAllowedError: ["Нет доступа к камере", "Разрешите доступ к камере в настройках браузера для этого сайта или распознайте фото из галереи."],
-    NotFoundError: ["Камера не найдена", "На этом устройстве нет доступной камеры. Выберите фото из галереи."],
-    NotReadableError: ["Камера занята", "Камеру использует другое приложение. Закройте его и попробуйте снова."],
-    InsecureError: ["Нужна защищённая ссылка", "Камера работает только по https. Откройте сайт по ссылке github.io в Chrome или Safari."],
-  };
-  const [t, x] = map[e && e.name] || ["Камера недоступна", "Откройте сайт в Chrome или Safari (не во встроенном браузере мессенджера) или выберите фото."];
-  setState("error", { title: t, text: x, actions: `<button class="btn btn-light" data-act="photo">${ico("i-img")}Выбрать фото</button><button class="btn btn-line" data-act="reset">Назад</button>` });
+  const map = { NotAllowedError: "camDenied", NotFoundError: "camNone", NotReadableError: "camBusy", InsecureError: "camHttps" };
+  const k = map[e && e.name] || "camOther";
+  setState("error", { title: k + "T", text: k + "X", actions: [["photo", "i-img", "choosePhoto", "light"], ["reset", null, "back", "line"]] });
 }
 function stopCam() {
   running = false; clearTimeout(loopTimer);
-  if (stream) stream.getTracks().forEach(t => t.stop());
+  if (stream) stream.getTracks().forEach(tr => tr.stop());
   stream = null;
   const v = $("video"); v.pause(); v.srcObject = null; v.classList.add("hidden");
   updateCamBtn();
@@ -541,20 +573,20 @@ $("photoLbl").addEventListener("keydown", e => { if (e.key === "Enter" || e.key 
 $("photoIn").onchange = e => {
   const file = e.target.files[0]; e.target.value = "";
   if (!file) return;
-  if (!model) { toast("Модель ещё не загружена"); return; }
+  if (!model) { toast(t("modelNotReady")); return; }
   if (running) stopCam();
   clearPhoto();
   photoURL = URL.createObjectURL(file);
   const img = $("shot");
   setState("analyzing"); showMeter({ className: "", probability: 0 });
-  img.onerror = () => { clearPhoto(); setState("error", { title: "Не удалось открыть файл", text: "Выберите изображение в формате JPG или PNG.", actions: `<button class="btn btn-light" data-act="photo">${ico("i-img")}Выбрать другое</button>` }); };
+  img.onerror = () => { clearPhoto(); setState("error", { title: "fileBadT", text: "fileBadX", actions: [["photo", "i-img", "chooseOther", "light"]] }); };
   img.onload = async () => {
     img.classList.remove("hidden");
     try {
       const top = await classify(img); showMeter(top);
       if (BY_ID[top.className] && top.probability >= PHOTO_THRESH) { setState("found"); openCard(top.className, top.probability); }
-      else setState("nomatch", { text: top.className === "fon" ? "На фото не видно объектов из коллекции. Снимите объект крупнее, в центре кадра." : "Модель не уверена. Попробуйте другой ракурс: объект в центре, без людей в кадре." });
-    } catch (err) { setState("error", { title: "Ошибка распознавания", text: err.message, actions: `<button class="btn btn-light" data-act="reset">Назад</button>` }); }
+      else setState("nomatch", { text: top.className === "fon" ? "nomFon" : "nomLow" });
+    } catch (err) { setState("error", { title: "recogErrT", textRaw: err.message, actions: [["reset", null, "back", "light"]] }); }
   };
   img.src = photoURL;
 };
@@ -562,44 +594,48 @@ $("vpClose").onclick = resetView;
 
 /* ---------- каталог ---------- */
 const FILTERS = [
-  { id: "all", label: "Проект", test: o => o.zone in ZONES },
-  ...Object.entries(ZONES).map(([k, v]) => ({ id: k, label: v, test: o => o.zone === k })),
-  { id: "seen", label: "Изученные", test: o => isSeen(o.id) },
-  { id: "other", label: "Другие", test: o => !(o.zone in ZONES) },
+  { id: "all", key: "fAll", test: o => o.zone in ZONES },
+  ...Object.keys(ZONES).map(k => ({ id: k, zone: k, test: o => o.zone === k })),
+  { id: "seen", key: "fSeen", test: o => isSeen(o.id) },
+  { id: "other", key: "fOther", test: o => !(o.zone in ZONES) },
 ];
+const fLabel = f => f.key ? t(f.key) : zoneName(f.zone);
 let filter = "all", query = "";
 const norm = s => String(s || "").toLowerCase().replace(/ё/g, "е");
 function renderChips() {
-  $("chips").innerHTML = FILTERS.map(f => `<button class="chip" data-f="${f.id}" aria-pressed="${f.id === filter}">${esc(f.label)}<span class="n">${ALL_OBJECTS.filter(f.test).length}</span></button>`).join("");
+  $("chips").innerHTML = FILTERS.map(f => `<button class="chip" data-f="${f.id}" aria-pressed="${f.id === filter}">${esc(fLabel(f))}<span class="n">${ALL_OBJECTS.filter(f.test).length}</span></button>`).join("");
   $("chips").querySelectorAll(".chip").forEach(b => b.onclick = () => { filter = b.dataset.f; renderChips(); renderList(); });
 }
 function itemHTML(o) {
-  const done = isSeen(o.id);
-  return `<button class="item" data-id="${o.id}" aria-label="${esc(o.name)}${done ? ", изучено" : ""}">
+  const done = isSeen(o.id), l = L(o);
+  return `<button class="item" data-id="${o.id}" aria-label="${esc(l.name)}${done ? ", " + esc(t("studiedA")) : ""}">
     ${typeIco(o)}
-    <span><b>${esc(o.name)}</b><span class="kk">${esc(o.nameKk)}</span><span class="meta">${esc(TYPES[o.type])}${o.year && o.year !== "—" ? " · " + esc(o.year) : ""}</span></span>
+    <span><b>${esc(l.name)}</b><span class="kk" lang="${l.secondLang}">${esc(l.second)}</span><span class="meta">${esc(typeName(o.type))}${l.year && l.year !== "—" ? " · " + esc(l.year) : ""}</span></span>
     <span class="badge ${done ? "on" : ""}" aria-hidden="true">${ico("i-check", 16)}</span>
   </button>`;
+}
+// поиск ищет по всем трём языкам
+function haystack(o) {
+  const tr = OBJ_I18N[o.id] || {};
+  return [o, tr.kk || {}, tr.en || {}].flatMap(x => [x.name, x.place, x.year, x.oldNames, x.text]).concat(o.nameKk).map(norm).join(" ");
 }
 function renderList() {
   const f = FILTERS.find(x => x.id === filter);
   const q = norm(query.trim());
-  const match = o => !q || [o.name, o.nameKk, o.place, o.year, o.oldNames, o.text].some(v => norm(v).includes(q));
-  const items = ALL_OBJECTS.filter(f.test).filter(match);
+  const items = ALL_OBJECTS.filter(f.test).filter(o => !q || haystack(o).includes(q));
   $("qClear").classList.toggle("hidden", !query);
   if (!items.length) {
     const byQuery = !!q;
-    $("list").innerHTML = `<div class="nores">${ico(byQuery ? "i-search" : "i-book", 28)}<b>${byQuery ? "Ничего не найдено" : "Пока пусто"}</b><p>${byQuery ? `По запросу «${esc(query.trim())}» в разделе «${esc(f.label)}» нет объектов.` : "Распознайте объект или откройте карточку в каталоге — он появится здесь."}</p>${byQuery ? `<button class="btn btn-ghost" id="resetQ">Сбросить поиск</button>` : ""}</div>`;
+    $("list").innerHTML = `<div class="nores">${ico(byQuery ? "i-search" : "i-book", 28)}<b>${esc(t(byQuery ? "nfT" : "emptyT"))}</b><p>${esc(byQuery ? t("nfX", query.trim(), fLabel(f)) : t("emptyX"))}</p>${byQuery ? `<button class="btn btn-ghost" id="resetQ">${esc(t("resetSearch"))}</button>` : ""}</div>`;
     const r = $("resetQ"); if (r) r.onclick = () => { query = ""; $("q").value = ""; filter = "all"; renderChips(); renderList(); $("q").focus(); };
     return;
   }
-  // группировка по зонам
   const groups = {};
   items.forEach(o => (groups[o.zone] = groups[o.zone] || []).push(o));
   const order = [...Object.keys(ZONES), "center", "old"];
   $("list").innerHTML = order.filter(z => groups[z]).map(z => {
     const g = groups[z], d = g.filter(o => isSeen(o.id)).length;
-    return `<div class="group"><div class="ghead"><h3>${ico("i-pin", 16)}${esc(ZONE_NAMES[z])}</h3><span>${d}/${g.length} изучено</span></div><div class="list">${g.map(itemHTML).join("")}</div></div>`;
+    return `<div class="group"><div class="ghead"><h3>${ico("i-pin", 16)}${esc(zoneName(z))}</h3><span>${esc(t("studied", d, g.length))}</span></div><div class="list">${g.map(itemHTML).join("")}</div></div>`;
   }).join("");
   $("list").querySelectorAll(".item").forEach(el => el.onclick = () => openCard(el.dataset.id));
 }
@@ -607,54 +643,52 @@ $("q").addEventListener("input", e => { query = e.target.value; renderList(); })
 $("qClear").onclick = () => { query = ""; $("q").value = ""; renderList(); $("q").focus(); };
 
 /* ---------- карточка ---------- */
-function openCard(id, prob) {
+function openCard(id, prob, rerender) {
   const o = BY_ID[id]; if (!o) return;
+  const l = L(o);
   if (!cardOpen) lastFocus = document.activeElement;
-  cardOpen = true;
-  if (prob && navigator.vibrate) navigator.vibrate(60);
-  const fact = (icon, label, val, wide) => `<div class="fact ${wide ? "wide" : ""}"><dt>${ico(icon, 14)}${label}</dt><dd>${esc(val)}</dd></div>`;
+  cardOpen = true; cardId = id; cardProb = prob || null;
+  if (prob && !rerender && navigator.vibrate) navigator.vibrate(60);
+  const fact = (icon, label, val, wide) => `<div class="fact ${wide ? "wide" : ""}"><dt>${ico(icon, 14)}${esc(label)}</dt><dd>${esc(val)}</dd></div>`;
   $("sheet").innerHTML = `
     <div class="sheet-top"><span class="grab" aria-hidden="true"></span>
-      <div class="tags"><span class="tag l">${ico("t-" + o.type, 14)}${esc(TYPES[o.type])}</span><span class="tag">${ico("i-pin", 14)}${esc(ZONE_NAMES[o.zone])}</span></div>
-      <button class="close" id="cClose" aria-label="Закрыть карточку">${ico("i-x")}</button>
+      <div class="tags"><span class="tag l">${ico("t-" + o.type, 14)}${esc(typeName(o.type))}</span><span class="tag">${ico("i-pin", 14)}${esc(zoneName(o.zone))}</span></div>
+      <button class="close" id="cClose" aria-label="${esc(t("closeCard"))}">${ico("i-x")}</button>
     </div>
-    <h2 id="cTitle">${esc(o.name)}</h2>
-    <p class="kkname" lang="kk">${esc(o.nameKk)}</p>
-    ${prob ? `<div class="conf">${ico("i-check", 16)}Распознано нейросетью · ${Math.round(prob * 100)}%</div>` : ""}
+    <h2 id="cTitle">${esc(l.name)}</h2>
+    <p class="kkname" lang="${l.secondLang}">${esc(l.second)}</p>
+    ${prob ? `<div class="conf">${ico("i-check", 16)}${esc(t("recognized", Math.round(prob * 100)))}</div>` : ""}
     <svg class="orn" aria-hidden="true" viewBox="0 0 240 14" preserveAspectRatio="xMidYMid meet"><use href="#o-line"/></svg>
     <dl class="facts">
-      ${fact("i-cal", "Год", o.year && o.year !== "—" ? o.year : "Не указан")}
-      ${fact("t-" + o.type, "Тип", TYPES[o.type])}
-      ${fact("i-pin", "Где", o.place || "—", true)}
-      ${o.oldNames ? fact("i-hist", "Названия", o.oldNames, true) : ""}
+      ${fact("i-cal", t("year"), l.year && l.year !== "—" ? l.year : t("noYear"))}
+      ${fact("t-" + o.type, t("type"), typeName(o.type))}
+      ${fact("i-pin", t("where"), l.place || "—", true)}
+      ${l.oldNames ? fact("i-hist", t("names"), l.oldNames, true) : ""}
     </dl>
-    <div class="story"><h3>История</h3><p>${esc(o.text)}</p></div>
-    <div class="note">${ico("i-info", 16)}<span>Сведения собраны из открытых источников (Центр охраны историко-культурного наследия Ақтөбе, местная пресса) и сверяются с краеведческим музеем.</span></div>
-    <button class="btn btn-primary" id="cDone">${running ? `${ico("i-scan")}Продолжить сканирование` : "Закрыть"}</button>`;
+    <div class="story"><h3>${esc(t("history"))}</h3><p>${esc(l.text)}</p></div>
+    <div class="note">${ico("i-info", 16)}<span>${esc(t("source"))}</span></div>
+    <button class="btn btn-primary" id="cDone">${running ? `${ico("i-scan")}${esc(t("continueScan"))}` : esc(t("close"))}</button>`;
+  $("sheet").setAttribute("lang", lang);
   const scrim = $("scrim");
   scrim.classList.add("show"); scrim.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
-  $("sheet").scrollTop = 0;
   $("cClose").onclick = closeCard; $("cDone").onclick = closeCard;
-  setTimeout(() => $("cClose").focus({ preventScroll: true }), 30);
-  markSeen(id);
+  if (!rerender) { $("sheet").scrollTop = 0; setTimeout(() => $("cClose").focus({ preventScroll: true }), 30); markSeen(id); }
 }
 function closeCard() {
   if (!cardOpen) return;
-  cardOpen = false; streak = 0; lastId = null;
+  cardOpen = false; cardId = null; streak = 0; lastId = null;
   const scrim = $("scrim");
   scrim.classList.remove("show"); scrim.setAttribute("aria-hidden", "true");
   document.body.style.overflow = "";
-  const st = $("vp").dataset.state;
   if (running) setState("camera");
-  else if (st === "found" && photoURL) { /* оставляем фото с отметкой «распознано» */ }
   if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
 }
 $("scrim").addEventListener("click", e => { if (e.target.id === "scrim") closeCard(); });
 document.addEventListener("keydown", e => {
   if (!cardOpen) return;
   if (e.key === "Escape") { e.preventDefault(); closeCard(); }
-  if (e.key === "Tab") { // удержание фокуса внутри карточки
+  if (e.key === "Tab") {
     const f = [...$("sheet").querySelectorAll("button,[href],[tabindex]:not([tabindex='-1'])")];
     if (!f.length) return;
     const first = f[0], last = f[f.length - 1];
@@ -662,7 +696,6 @@ document.addEventListener("keydown", e => {
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
   }
 });
-// свайп вниз закрывает карточку
 let ty = null;
 $("sheet").addEventListener("touchstart", e => { ty = $("sheet").scrollTop <= 0 ? e.touches[0].clientY : null; }, { passive: true });
 $("sheet").addEventListener("touchend", e => { if (ty !== null && e.changedTouches[0].clientY - ty > 90) closeCard(); ty = null; }, { passive: true });
@@ -678,26 +711,29 @@ function tab(name) {
 $("tab-scan").onclick = () => tab("scan");
 $("tab-cat").onclick = () => tab("cat");
 document.querySelector(".nav-in").addEventListener("keydown", e => {
-  if (e.key === "ArrowRight" || e.key === "ArrowLeft") { const t = $("tab-scan").getAttribute("aria-selected") === "true" ? "cat" : "scan"; tab(t); $(t === "scan" ? "tab-scan" : "tab-cat").focus(); }
+  if (e.key === "ArrowRight" || e.key === "ArrowLeft") { const n = $("tab-scan").getAttribute("aria-selected") === "true" ? "cat" : "scan"; tab(n); $(n === "scan" ? "tab-scan" : "tab-cat").focus(); }
 });
 
 /* ---------- служебное ---------- */
 let toastT;
-function toast(msg) { const t = $("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 2600); }
+function toast(msg) { const el = $("toast"); el.textContent = msg; el.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove("show"), 2600); }
 document.addEventListener("visibilitychange", () => { if (document.hidden && running) { stopCam(); setState("idle"); } });
 window.addEventListener("pagehide", () => { stopCam(); clearPhoto(); });
 window.addEventListener("scroll", () => $("top").classList.toggle("scrolled", scrollY > 4), { passive: true });
 
-/* ---------- ссылки: #catalog открывает каталог, #obj=<id> — карточку ---------- */
+/* ---------- ссылки: #catalog, #obj=<id>, #lang=kk|ru|en ---------- */
 function applyHash() {
   const h = decodeURIComponent(location.hash.slice(1));
-  if (h === "catalog") tab("cat");
-  const m = h.match(/^obj=([\w-]+)$/);
-  if (m && BY_ID[m[1]]) openCard(m[1]);
+  h.split("&").forEach(part => {
+    if (part === "catalog") tab("cat");
+    const lg = part.match(/^lang=(kk|ru|en)$/); if (lg && lg[1] !== lang) setLang(lg[1]);
+    const m = part.match(/^obj=([\w-]+)$/); if (m && BY_ID[m[1]]) openCard(m[1]);
+  });
 }
 window.addEventListener("hashchange", applyHash);
 
-renderProgress(); renderRecent(); renderChips(); renderList();
+renderLang(); applyStatic(); renderProgress(); renderRecent(); renderChips(); renderList();
+setState("loading");
 applyHash();
 loadModel();
 </script>
