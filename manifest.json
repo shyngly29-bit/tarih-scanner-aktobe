@@ -1,11 +1,13 @@
 {
   "name": "Тарих Сканер · Ақтөбе",
   "short_name": "Тарих Сканер",
+  "description": "Наведите камеру на памятник или табличку улицы Ақтөбе и узнайте его историю.",
+  "lang": "ru",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#1f1a15",
-  "theme_color": "#1f1a15",
+  "background_color": "#F3EEE4",
+  "theme_color": "#F3EEE4",
   "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
 }

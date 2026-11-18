@@ -2,293 +2,704 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1f1a15">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#F3EEE4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#11151B" media="(prefers-color-scheme: dark)">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Тарих Сканер">
+<meta name="description" content="Наведите камеру на памятник или табличку улицы Ақтөбе и узнайте его историю.">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
-<title>Тарих Сканер Ақтөбе</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Unbounded:wght@500;600;700&display=swap" rel="stylesheet">
+<title>Тарих Сканер · Ақтөбе</title>
 <style>
-:root{--bg:#f6f1e7;--card:#fffaf0;--ink:#2a2118;--muted:#7a6a58;--accent:#9c5b1b;--accent2:#1f5f5b;--line:#e2d6c2;--ok:#2e7d4f;
-  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);--nav:64px}
-@media (prefers-color-scheme:dark){:root{--bg:#17130f;--card:#221c16;--ink:#f1e7d8;--muted:#a8978a;--accent:#e0a050;--accent2:#5fb3a8;--line:#3a3027;--ok:#5fc48a}}
+/* ===================== ТОКЕНЫ ===================== */
+:root{
+  --paper:#F3EEE4; --paper-2:#EAE2D3; --card:#FBF8F2; --line:#DDD3C1; --line-2:#CFC2AB;
+  --ink:#17202B; --ink-2:#3E4855; --muted:#675F53;
+  --lapis:#0A6B76; --lapis-ink:#075A63; --lapis-soft:#D7EAEA;
+  --ochre:#B7782C; --ochre-ink:#8A5517; --ochre-soft:#F1E1C7;
+  --ok:#2C7A4B; --ok-soft:#DCEFE2; --err:#B3261E; --err-soft:#F6DEDB;
+  --night:#0E141A; --night-2:#18212A; --on-night:#F2ECE1; --on-night-2:#B9B2A6;
+  --shadow:0 1px 0 rgba(23,32,43,.04),0 8px 24px -12px rgba(23,32,43,.18);
+  --r-s:10px; --r-m:16px; --r-l:24px;
+  --st:env(safe-area-inset-top,0px); --sb:env(safe-area-inset-bottom,0px);
+  --sl:env(safe-area-inset-left,0px); --sr:env(safe-area-inset-right,0px);
+  --head:60px; --nav:66px;
+  --f-display:"Unbounded",system-ui,sans-serif; --f-body:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --paper:#11151B; --paper-2:#171D25; --card:#1B222B; --line:#2A333E; --line-2:#36414E;
+  --ink:#EEE7DA; --ink-2:#C9C1B3; --muted:#A39A8C;
+  --lapis:#4DB3BE; --lapis-ink:#7CCAD2; --lapis-soft:#173A40;
+  --ochre:#D7A15A; --ochre-ink:#E2B677; --ochre-soft:#3A2D1C;
+  --ok:#62C08A; --ok-soft:#183626; --err:#F08A80; --err-soft:#3E1E1C;
+  --shadow:0 1px 0 rgba(0,0,0,.2),0 10px 28px -14px rgba(0,0,0,.6);
+  color-scheme:dark;
+}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;touch-action:manipulation;overscroll-behavior-y:none}
-button,label{font:inherit;touch-action:manipulation}
-header{position:sticky;top:0;z-index:5;background:var(--bg);padding:calc(10px + var(--st)) 16px 8px;display:flex;align-items:center;gap:10px}
-header h1{font-size:18px;margin:0;line-height:1.2}
-header .sub{font-size:12px;color:var(--muted)}
-.logo{width:34px;height:34px;border-radius:10px;background:var(--accent);display:grid;place-items:center;color:#fff;font-weight:700;flex:none}
-main{max-width:640px;margin:0 auto;padding:0 16px calc(var(--nav) + var(--sb) + 16px)}
-/* --- сканер --- */
-.cam{position:relative;border-radius:18px;overflow:hidden;background:#000;width:100%;
-  height:calc(100dvh - var(--nav) - var(--sb) - var(--st) - 235px);min-height:300px;max-height:640px}
-.cam video,.cam img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.frame{position:absolute;inset:14% 10%;border-radius:16px;pointer-events:none;
-  background:linear-gradient(#fff,#fff) top left/26px 3px,linear-gradient(#fff,#fff) top left/3px 26px,
-  linear-gradient(#fff,#fff) top right/26px 3px,linear-gradient(#fff,#fff) top right/3px 26px,
-  linear-gradient(#fff,#fff) bottom left/26px 3px,linear-gradient(#fff,#fff) bottom left/3px 26px,
-  linear-gradient(#fff,#fff) bottom right/26px 3px,linear-gradient(#fff,#fff) bottom right/3px 26px;background-repeat:no-repeat;opacity:.85}
-.scanning .frame{animation:pulse 1.6s ease-in-out infinite}
-@keyframes pulse{50%{opacity:.35}}
-.idle{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#ddd;padding:24px;font-size:15px}
-.idle b{display:block;font-size:44px;margin-bottom:6px}
-.hint{position:absolute;left:0;right:0;bottom:0;padding:12px 14px;background:linear-gradient(transparent,rgba(0,0,0,.8));color:#fff;font-size:15px;font-weight:600}
-.bar{height:6px;background:rgba(255,255,255,.25);border-radius:3px;margin-top:6px;overflow:hidden}
-.bar i{display:block;height:100%;width:0;background:#7ee0a0;transition:width .2s}
-.ctrls{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px}
-.btn{min-height:52px;padding:12px 16px;border-radius:14px;border:0;background:var(--accent2);color:#fff;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
-.btn:active{transform:scale(.98)}
-.btn.alt{background:var(--card);color:var(--ink);border:1px solid var(--line);font-weight:600}
-.btn.sq{width:52px;padding:0;font-size:22px}
-.btn input{display:none}
-.status{margin-top:8px;font-size:13px;color:var(--muted)}
-.progress{margin-top:8px;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-radius:12px;font-size:14px}
-/* --- каталог --- */
-.chips{display:flex;gap:6px;margin:4px -16px 10px;padding:0 16px;overflow-x:auto;scrollbar-width:none}
-.chips::-webkit-scrollbar{display:none}
-.chip{flex:none;min-height:40px;padding:8px 14px;border-radius:20px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:14px;white-space:nowrap}
-.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.sect{font-size:13px;color:var(--muted);margin:14px 2px 6px;text-transform:uppercase;letter-spacing:.4px}
-.item{display:flex;gap:12px;align-items:center;min-height:64px;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:8px;cursor:pointer}
-.item:active{background:var(--line)}
-.ico{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:20px;background:var(--bg);flex:none}
-.item b{display:block;font-size:15px;line-height:1.25}
-.item small{color:var(--muted);font-size:13px}
-.seen{margin-left:auto;color:var(--ok);font-weight:700;font-size:18px}
-/* --- нижняя навигация --- */
-nav{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:var(--sb)}
-nav button{flex:1;height:var(--nav);border:0;background:none;color:var(--muted);font-size:12px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
-nav button span{font-size:22px;line-height:1}
-nav button.on{color:var(--accent)}
-/* --- карточка --- */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center;z-index:9}
-.modal.show{display:flex}
-.sheet{background:var(--card);width:100%;max-width:640px;max-height:88dvh;overflow:auto;overscroll-behavior:contain;border-radius:22px 22px 0 0;padding:8px 18px calc(18px + var(--sb));animation:up .25s ease;touch-action:pan-y}
-@keyframes up{from{transform:translateY(60px);opacity:0}}
-.grab{width:44px;height:5px;border-radius:3px;background:var(--line);margin:4px auto 12px}
-.sheet h2{margin:8px 0 2px;font-size:22px;line-height:1.2}
-.kk{color:var(--accent);font-weight:600}
-.meta{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;font-size:14px;margin:12px 0;padding:10px 12px;background:var(--bg);border-radius:12px}
-.meta span:nth-child(odd){color:var(--muted)}
-.sheet p{font-size:16px;line-height:1.55}
-.tag{display:inline-block;font-size:12px;padding:3px 9px;border-radius:8px;background:var(--accent2);color:#fff;margin-right:4px}
-.conf{font-size:13px;color:var(--ok);margin-top:6px;font-weight:600}
-.warn{font-size:12px;color:var(--muted);margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:calc(var(--head) + var(--st) + 12px);scroll-padding-bottom:calc(var(--nav) + var(--sb) + 12px)}
+html,body{margin:0;min-height:100%;background:var(--paper)}
+body{color:var(--ink);font:400 16px/1.5 var(--f-body);overflow-x:hidden;overscroll-behavior-y:none;touch-action:manipulation}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0}
+svg{display:block;flex:none}
+.sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:focus-visible{outline:3px solid var(--lapis);outline-offset:2px;border-radius:8px}
 .hidden{display:none!important}
-@media (min-width:700px){.cam{height:min(62vh,640px)}}
+
+/* ===================== ШАПКА ===================== */
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:saturate(1.2) blur(10px);-webkit-backdrop-filter:saturate(1.2) blur(10px);
+  padding:calc(8px + var(--st)) calc(16px + var(--sr)) 8px calc(16px + var(--sl));border-bottom:1px solid transparent}
+.top.scrolled{border-bottom-color:var(--line)}
+.top-in{max-width:1180px;margin:0 auto;height:44px;display:flex;align-items:center;gap:12px}
+.mark{width:40px;height:40px;border-radius:12px;background:var(--ink);color:var(--paper);display:grid;place-items:center}
+.brand{min-width:0;flex:1}
+.brand b{display:block;font:600 16px/1.15 var(--f-display);letter-spacing:-.01em}
+.brand span{font-size:12.5px;color:var(--muted)}
+.ring{display:flex;align-items:center;gap:8px;padding:4px 10px 4px 4px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:13px;font-weight:600;white-space:nowrap}
+.ring svg circle{transition:stroke-dashoffset .5s ease}
+
+/* ===================== КАРКАС ===================== */
+.app{max-width:1180px;margin:0 auto;padding:4px calc(16px + var(--sr)) calc(var(--nav) + var(--sb) + 20px) calc(16px + var(--sl))}
+.panel{min-width:0}
+.eyebrow{font:600 11.5px/1 var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px;margin:18px 2px 10px}
+.eyebrow::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+
+/* ===================== СКАНЕР ===================== */
+.vp{position:relative;border-radius:var(--r-l);overflow:hidden;background:var(--night);color:var(--on-night);isolation:isolate;
+  height:clamp(300px,calc(100dvh - var(--st) - var(--sb) - var(--head) - var(--nav) - 190px),600px)}
+.vp video,.vp .shot{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+.vp::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(120% 70% at 50% 0%,rgba(10,107,118,.28),transparent 60%),radial-gradient(90% 60% at 50% 110%,rgba(183,120,44,.18),transparent 60%)}
+.vp[data-state=camera]::before,.vp[data-state=found]::before,.vp[data-state=analyzing]::before,.vp[data-state=nomatch]::before{background:linear-gradient(180deg,rgba(14,20,26,.55),transparent 22%,transparent 70%,rgba(14,20,26,.7))}
+/* узор-сетка на холостом экране */
+.vp .pattern{position:absolute;inset:0;z-index:1;opacity:.045;color:var(--on-night)}
+.vp[data-state=camera] .pattern,.vp[data-state=analyzing] .pattern,.vp[data-state=found] .pattern,.vp[data-state=nomatch] .pattern{display:none}
+/* рамка наведения: уголки «қошқар мүйіз» */
+.aim{position:absolute;z-index:2;left:50%;top:47%;width:min(68%,340px);aspect-ratio:1;transform:translate(-50%,-50%);pointer-events:none;color:rgba(242,236,225,.92);transition:color .25s ease,transform .3s ease}
+.aim svg{position:absolute;width:30%;height:30%}
+.aim .c1{left:0;top:0}.aim .c2{right:0;top:0;transform:scaleX(-1)}.aim .c3{left:0;bottom:0;transform:scaleY(-1)}.aim .c4{right:0;bottom:0;transform:scale(-1)}
+.vp[data-state=loading] .aim,.vp[data-state=error] .aim,.vp[data-state=nomatch] .aim{opacity:.12}
+.vp[data-state=idle] .aim{top:42%;width:min(58%,300px)}
+.vp[data-state=idle] .center{place-items:end center;padding:0 24px 22px}
+.vp[data-state=idle] .center .glyph{display:none}
+.vp[data-state=idle] .center h2{margin-top:0}
+.vp[data-state=found] .aim{color:#7BE0A6;transform:translate(-50%,-50%) scale(.96)}
+.vp[data-state=nomatch] .aim{color:#F2B8A0}
+/* линия сканирования — только когда реально идёт анализ */
+.sweep{position:absolute;left:6%;right:6%;height:2px;top:8%;border-radius:2px;background:linear-gradient(90deg,transparent,#7FD4DC,transparent);opacity:0}
+.vp[data-state=camera] .sweep,.vp[data-state=analyzing] .sweep{opacity:.9;animation:sweep 2.4s ease-in-out infinite}
+@keyframes sweep{0%{top:8%}50%{top:90%}100%{top:8%}}
+/* верхняя плашка состояния */
+.state{position:absolute;z-index:3;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.pill{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px;border-radius:999px;background:rgba(14,20,26,.66);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);font-size:13px;font-weight:600;color:var(--on-night);border:1px solid rgba(242,236,225,.14)}
+.dot{width:8px;height:8px;border-radius:50%;background:#9AA3AD}
+.vp[data-state=idle] .dot{background:#7FD4DC}
+.vp[data-state=camera] .dot,.vp[data-state=analyzing] .dot{background:#7FD4DC;animation:blink 1.2s ease-in-out infinite}
+.vp[data-state=found] .dot{background:#7BE0A6}
+.vp[data-state=error] .dot,.vp[data-state=nomatch] .dot{background:#F2A08F}
+.spin{width:14px;height:14px;border-radius:50%;border:2px solid rgba(242,236,225,.3);border-top-color:#F2ECE1;animation:rot .8s linear infinite}
+@keyframes blink{50%{opacity:.35}} @keyframes rot{to{transform:rotate(360deg)}}
+.iconbtn{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:rgba(14,20,26,.66);color:var(--on-night);border:1px solid rgba(242,236,225,.14)}
+/* центр холостого экрана */
+.center{position:absolute;z-index:3;inset:0;display:grid;place-items:center;text-align:center;padding:64px 28px 88px}
+.center h2{font:600 clamp(18px,4.8vw,22px)/1.25 var(--f-display);margin:12px 0 6px;letter-spacing:-.01em}
+.center p{margin:0 auto;max-width:30ch;color:var(--on-night-2);font-size:14.5px}
+.center .glyph{width:56px;height:56px;margin:0 auto;border-radius:16px;display:grid;place-items:center;background:rgba(242,236,225,.08);border:1px solid rgba(242,236,225,.16)}
+.center .acts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.center .btn{height:44px;padding:0 16px;font-size:14.5px}
+.vp[data-state=nomatch] .center>div,.vp[data-state=error] .center>div{max-width:360px;padding:20px 18px;border-radius:20px;background:rgba(14,20,26,.8);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(242,236,225,.12)}
+.vp[data-state=nomatch] .glyph,.vp[data-state=error] .glyph{color:#F2B8A0}
+/* нижняя полоса уверенности */
+.meter{position:absolute;z-index:3;left:12px;right:12px;bottom:12px;padding:10px 12px;border-radius:14px;background:rgba(14,20,26,.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(242,236,225,.14)}
+.meter .row{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;font-weight:600}
+.meter .row span:last-child{font-variant-numeric:tabular-nums;color:var(--on-night-2)}
+.bar{height:6px;margin-top:8px;border-radius:3px;background:rgba(242,236,225,.16);overflow:hidden}
+.bar i{display:block;height:100%;width:0;border-radius:3px;background:linear-gradient(90deg,#7FD4DC,#7BE0A6);transition:width .25s ease}
+.bar .th{position:relative}
+.meter small{display:block;margin-top:6px;color:var(--on-night-2);font-size:12px}
+
+/* кнопки */
+.ctrl{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:12px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:54px;padding:0 20px;border-radius:16px;font-weight:600;font-size:16px;transition:transform .12s ease,background .2s ease}
+.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--ink);color:var(--paper)}
+.btn-primary[aria-pressed=true]{background:var(--err);color:#fff}
+.btn-ghost{background:var(--card);border:1px solid var(--line);color:var(--ink)}
+.btn-light{background:var(--on-night);color:var(--night)}
+.btn-line{background:transparent;border:1px solid rgba(242,236,225,.3);color:var(--on-night)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.btn-sq{width:54px;padding:0}
+.tip{display:flex;gap:10px;align-items:flex-start;margin-top:12px;padding:12px 14px;border-radius:14px;background:var(--paper-2);color:var(--ink-2);font-size:13.5px;line-height:1.45}
+.tip svg{color:var(--lapis);margin-top:1px}
+
+/* последние изученные */
+.recent{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:2px 16px 4px}
+.recent::-webkit-scrollbar{display:none}
+.rchip{flex:none;display:flex;align-items:center;gap:10px;max-width:260px;padding:8px 14px 8px 8px;border-radius:14px;background:var(--card);border:1px solid var(--line);text-align:left}
+.rchip .ti{width:36px;height:36px}
+.rchip b{display:block;font-size:14px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px}
+.rchip small{color:var(--muted);font-size:12px}
+.empty-mini{padding:14px;border-radius:14px;border:1px dashed var(--line-2);color:var(--muted);font-size:13.5px}
+
+/* ===================== КАТАЛОГ ===================== */
+.cat-head h2{font:600 22px/1.2 var(--f-display);margin:14px 2px 4px;letter-spacing:-.01em}
+.cat-head p{margin:0 2px 12px;color:var(--muted);font-size:14px}
+.search{position:relative}
+.search input{width:100%;height:50px;border-radius:14px;border:1px solid var(--line);background:var(--card);padding:0 46px 0 44px;font-size:16px;outline:none}
+.search input:focus{border-color:var(--lapis);box-shadow:0 0 0 3px color-mix(in srgb,var(--lapis) 22%,transparent)}
+.search input::placeholder{color:var(--muted)}
+.search input::-webkit-search-cancel-button,.search input::-webkit-search-decoration{-webkit-appearance:none;appearance:none;display:none}
+.search .s-ic{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.search .clear{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:10px;display:grid;place-items:center;color:var(--muted)}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:12px -16px 4px;padding:2px 16px 6px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:14px;font-weight:500;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.chip .n{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.chip[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.chip[aria-pressed=true] .n{color:inherit;opacity:.7}
+.group{margin-top:16px}
+.ghead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 2px 8px}
+.ghead h3{margin:0;font:600 15px/1.3 var(--f-display);display:flex;align-items:center;gap:8px}
+.ghead h3 svg{color:var(--ochre)}
+.ghead span{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.list{display:grid;gap:8px}
+.item{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;width:100%;min-height:72px;padding:12px 12px 12px 12px;border-radius:var(--r-m);background:var(--card);border:1px solid var(--line);text-align:left;box-shadow:var(--shadow);transition:border-color .2s ease,transform .12s ease}
+.item:hover{border-color:var(--line-2)}
+.item:active{transform:scale(.99)}
+.ti{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--lapis-soft);color:var(--lapis-ink)}
+.ti.street{background:var(--ochre-soft);color:var(--ochre-ink)}
+.item b{display:block;font-size:15.5px;line-height:1.25;font-weight:600}
+.item .kk{display:block;font-size:13px;color:var(--lapis-ink);margin-top:2px}
+.item .meta{display:block;font-size:12.5px;color:var(--muted);margin-top:3px}
+.badge{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;border:1.5px dashed var(--line-2);color:transparent}
+.badge.on{border:0;background:var(--ok-soft);color:var(--ok)}
+.nores{text-align:center;padding:36px 20px;border-radius:var(--r-m);border:1px dashed var(--line-2);margin-top:12px}
+.nores b{display:block;font:600 16px/1.3 var(--f-display);margin:10px 0 4px}
+.nores p{margin:0 0 14px;color:var(--muted);font-size:14px}
+.nores svg{margin:0 auto;color:var(--muted)}
+
+/* ===================== НИЖНЯЯ НАВИГАЦИЯ ===================== */
+.nav{position:fixed;z-index:30;left:0;right:0;bottom:0;padding:8px calc(16px + var(--sr)) calc(8px + var(--sb)) calc(16px + var(--sl));background:color-mix(in srgb,var(--paper) 90%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line)}
+.nav-in{max-width:520px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;border-radius:18px;background:var(--paper-2)}
+.nav button{height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:600;color:var(--muted)}
+.nav button[aria-selected=true]{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+
+/* ===================== КАРТОЧКА ===================== */
+.scrim{position:fixed;inset:0;z-index:40;background:rgba(10,14,18,.5);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s ease}
+.scrim.show{opacity:1;pointer-events:auto}
+.sheet{position:relative;width:100%;max-width:640px;max-height:min(90dvh,860px);overflow:auto;overscroll-behavior:contain;background:var(--card);border-radius:28px 28px 0 0;
+  padding:0 calc(20px + var(--sr)) calc(20px + var(--sb)) calc(20px + var(--sl));transform:translateY(24px);transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+.scrim.show .sheet{transform:none}
+.sheet-top{position:sticky;top:0;z-index:2;background:var(--card);padding:10px 0 8px;display:flex;align-items:center;justify-content:space-between}
+.grab{position:absolute;left:50%;top:6px;width:40px;height:5px;border-radius:3px;background:var(--line-2);transform:translateX(-50%)}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.tag{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:8px;font-size:12.5px;font-weight:600;background:var(--paper-2);color:var(--ink-2)}
+.tag.l{background:var(--lapis-soft);color:var(--lapis-ink)}
+.close{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--paper-2);color:var(--ink)}
+.sheet h2{font:600 clamp(22px,6vw,28px)/1.18 var(--f-display);margin:2px 0 6px;letter-spacing:-.015em}
+.sheet .kkname{font-size:16px;font-weight:600;color:var(--lapis-ink);margin:0}
+.conf{display:inline-flex;align-items:center;gap:8px;margin-top:12px;padding:8px 12px;border-radius:12px;background:var(--ok-soft);color:var(--ok);font-size:13.5px;font-weight:600}
+.orn{display:block;width:100%;height:14px;margin:18px 0 12px;color:var(--ochre);opacity:.7}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0}
+.fact{padding:12px;border-radius:14px;background:var(--paper);border:1px solid var(--line);min-width:0}
+.fact.wide{grid-column:1/-1}
+.fact dt{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.fact dd{margin:4px 0 0;font-size:15px;font-weight:500;line-height:1.4;overflow-wrap:anywhere}
+.story h3{font:600 13px/1 var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:22px 0 8px}
+.story p{margin:0;font-size:17px;line-height:1.65;color:var(--ink)}
+.note{margin-top:16px;padding:12px 14px;border-radius:12px;background:var(--paper-2);color:var(--muted);font-size:12.5px;line-height:1.45;display:flex;gap:8px}
+.sheet .btn{width:100%;margin-top:16px}
+
+/* ===================== ТОСТ ===================== */
+.toast{position:fixed;z-index:50;left:50%;bottom:calc(var(--nav) + var(--sb) + 16px);transform:translate(-50%,20px);opacity:0;padding:10px 16px;border-radius:12px;background:var(--ink);color:var(--paper);font-size:14px;font-weight:500;transition:all .25s ease;pointer-events:none;max-width:calc(100% - 32px)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ===================== АДАПТИВ ===================== */
+@media (max-height:640px){ .vp{height:clamp(240px,calc(100dvh - var(--st) - var(--sb) - var(--head) - var(--nav) - 150px),600px)} .tip{display:none} }
+@media (min-width:1024px){
+  .app{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:36px;padding-bottom:40px;align-items:start}
+  .panel.scan{position:sticky;top:calc(var(--head) + 16px)}
+  .vp{height:min(68vh,640px)}
+  #catalog{display:block!important}
+  #scan{display:block!important}
+  .nav{display:none}
+  .toast{bottom:24px}
+  .scrim{align-items:center}
+  .sheet{border-radius:28px;max-height:86vh}
+  .grab{display:none}
+  .recent{margin:0;padding:2px 0 4px;flex-wrap:wrap}
+  .chips{margin:12px 0 4px;padding:2px 0 6px;flex-wrap:wrap}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  .vp[data-state=camera] .sweep,.vp[data-state=analyzing] .sweep{animation:none;top:50%;opacity:.6}
+}
 </style>
 </head>
 <body>
-<header>
-  <div class="logo">AI</div>
-  <div><h1>Тарих Сканер · Ақтөбе</h1><div class="sub">Наведи камеру — узнай историю</div></div>
+
+<!-- ===================== ИКОНКИ ===================== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-cam" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.3-1.8h5.2L15.9 6h1.6A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.4" r="3.4"/></symbol>
+    <symbol id="i-img" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="m20.5 16-4.6-4.6L7 19.5"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24" fill="currentColor"><rect x="6.5" y="6.5" width="11" height="11" rx="2.5"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M4 12h16"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H10a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4zM20 5.5A1.5 1.5 0 0 0 18.5 4H14a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h6z"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="5.5" width="16" height="14" rx="2.5"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></symbol>
+    <symbol id="i-hist" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.4-5.7L4 8.6"/><path d="M4 4v4.6h4.6M12 8v4.3l3 1.8"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8v.01"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.8 19.5h18.4z"/><path d="M12 10v4.2M12 17v.01"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3L19.5 9"/><path d="M19.5 4v5h-5"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></symbol>
+    <!-- типы объектов -->
+    <symbol id="t-monument" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><path d="M10 21V10.5l-1.5 3M14 21V10.5l1.5 3M10 9h4M10 15h4M6 21h12"/></symbol>
+    <symbol id="t-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10a5 5 0 0 1 10 0M12 3v2M4 21h16M5.5 21V10h13v11M9.5 21v-5a2.5 2.5 0 0 1 5 0v5"/></symbol>
+    <symbol id="t-street" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M8 21h8"/><path d="M5 6h12l2.5 2.5L17 11H5z"/></symbol>
+    <symbol id="t-place" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19c3-5 6-8 9-8s6 3 9 8M12 11V4l5 2-5 2"/></symbol>
+    <!-- орнамент «қошқар мүйіз»: уголок рамки -->
+    <symbol id="o-corner" viewBox="0 0 60 60" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 50V20Q3 3 20 3h30"/><path d="M50 3c6 0 9 4 7 8.5-1.6 3.4-6.2 3.6-7.4.6-.8-2 1-3.6 2.6-2.8"/><path d="M3 50c0 6 4 9 8.5 7 3.4-1.6 3.6-6.2.6-7.4-2-.8-3.6 1-2.8 2.6"/></symbol>
+    <symbol id="o-line" viewBox="0 0 240 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M0 7h96M144 7h96"/><path d="M120 7c-5-6-14-6-14 0 0 4 6 4 6 0M120 7c5-6 14-6 14 0 0 4-6 4-6 0M120 7c-5 6-14 6-14 0M120 7c5 6 14 6 14 0"/></symbol>
+    <pattern id="p-orn" width="56" height="56" patternUnits="userSpaceOnUse"><path d="M28 8c-6 0-9 5-6 9 2 2.6 6 1.4 5.4-1.4M28 8c6 0 9 5 6 9-2 2.6-6 1.4-5.4-1.4M28 48c-6 0-9-5-6-9 2-2.6 6-1.4 5.4 1.4M28 48c6 0 9-5 6-9-2-2.6-6-1.4-5.4 1.4M28 20v16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></pattern>
+  </defs>
+</svg>
+
+<header class="top" id="top">
+  <div class="top-in">
+    <div class="mark" aria-hidden="true">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 4c-4 0-6 3.4-4 6 1.4 1.8 4 1 3.6-1M12 4c4 0 6 3.4 4 6-1.4 1.8-4 1-3.6-1M12 20c-4 0-6-3.4-4-6 1.4-1.8 4-1 3.6 1M12 20c4 0 6-3.4 4-6-1.4-1.8-4-1-3.6 1"/></svg>
+    </div>
+    <div class="brand"><b>Тарих Сканер</b><span>Ақтөбе · история города</span></div>
+    <div class="ring" id="ring" role="img" aria-label="Прогресс изучения">
+      <svg width="28" height="28" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15" fill="none" stroke="var(--line)" stroke-width="4"/><circle id="ringArc" cx="18" cy="18" r="15" fill="none" stroke="var(--lapis)" stroke-width="4" stroke-linecap="round" stroke-dasharray="94.25" stroke-dashoffset="94.25" transform="rotate(-90 18 18)"/></svg>
+      <span id="ringTxt">0/0</span>
+    </div>
+  </div>
 </header>
 
-<main>
-  <section id="scan">
-    <div class="cam" id="cam">
-      <video id="video" playsinline muted autoplay></video>
-      <img id="photo" class="hidden" alt="">
-      <div class="idle" id="idle"><div><b>📷</b>Нажмите «Сканировать» и наведите камеру на памятник или табличку улицы</div></div>
-      <div class="frame"></div>
-      <div class="hint"><div id="hint">Загрузка модели…</div><div class="bar"><i id="barFill"></i></div></div>
+<main class="app" id="app">
+  <!-- ===================== СКАНЕР ===================== -->
+  <section class="panel scan" id="scan" role="tabpanel" aria-labelledby="tab-scan">
+    <h1 class="sr">Сканер исторических объектов Ақтөбе</h1>
+    <div class="vp" id="vp" data-state="loading">
+      <video id="video" playsinline muted autoplay class="hidden" aria-hidden="true"></video>
+      <img id="shot" class="shot hidden" alt="Выбранная фотография">
+      <svg class="pattern" aria-hidden="true" width="100%" height="100%"><rect width="100%" height="100%" fill="url(#p-orn)"/></svg>
+      <div class="aim" aria-hidden="true">
+        <svg class="c1"><use href="#o-corner"/></svg><svg class="c2"><use href="#o-corner"/></svg>
+        <svg class="c3"><use href="#o-corner"/></svg><svg class="c4"><use href="#o-corner"/></svg>
+        <div class="sweep"></div>
+      </div>
+      <div class="state">
+        <span class="pill" id="pill" role="status" aria-live="polite"><span class="dot" id="pillDot"></span><span id="pillTxt">Загрузка модели…</span></span>
+        <button class="iconbtn hidden" id="vpClose" aria-label="Сбросить фото"><svg width="20" height="20"><use href="#i-x"/></svg></button>
+      </div>
+      <div class="center" id="center"></div>
+      <div class="meter hidden" id="meter" aria-hidden="true">
+        <div class="row"><span id="mName">Ищу объект в рамке</span><span id="mPct">0%</span></div>
+        <div class="bar"><i id="mBar"></i></div>
+        <small id="mHint">Карточка откроется при уверенности от 85%</small>
+      </div>
     </div>
-    <div class="ctrls">
-      <button class="btn" id="camBtn">▶ Сканировать</button>
-      <label class="btn alt sq" title="Фото из галереи">🖼<input type="file" id="photoIn" accept="image/*"></label>
+
+    <div class="ctrl">
+      <button class="btn btn-primary" id="camBtn" aria-pressed="false" disabled>
+        <svg width="22" height="22" id="camIco"><use href="#i-cam"/></svg><span id="camTxt">Сканировать</span>
+      </button>
+      <label class="btn btn-ghost btn-sq" id="photoLbl" aria-label="Распознать фото из галереи" title="Фото из галереи" tabindex="0">
+        <svg width="22" height="22"><use href="#i-img"/></svg>
+        <input type="file" id="photoIn" accept="image/*" class="sr" tabindex="-1">
+      </label>
     </div>
-    <div class="ctrls hidden" id="modelRow" style="grid-template-columns:1fr">
-      <label class="btn alt">🧠 Загрузить модель (3 файла)<input type="file" id="modelIn" multiple accept=".json,.bin"></label>
-    </div>
-    <div class="status" id="status">Модель: ищу в папке model/…</div>
-    <div class="progress" id="prog"></div>
+    <div class="tip"><svg width="18" height="18"><use href="#i-info"/></svg><span>Держите памятник или табличку внутри рамки 1–2 секунды. Объекты проекта — проспекты Әбілқайыр хана и Әлии Молдағұловой.</span></div>
+    <input type="file" id="modelIn" multiple accept=".json,.bin" class="sr" tabindex="-1">
+
+    <div class="eyebrow">Недавно изученные</div>
+    <div id="recent"></div>
   </section>
 
-  <section id="cat" class="hidden">
-    <div class="chips" id="chips"></div>
+  <!-- ===================== КАТАЛОГ ===================== -->
+  <section class="panel" id="catalog" role="tabpanel" aria-labelledby="tab-cat" hidden>
+    <div class="cat-head">
+      <h2>Коллекция мест</h2>
+      <p id="catSub">Памятники, здания и улицы с историей</p>
+    </div>
+    <div class="search" role="search">
+      <svg class="s-ic" width="20" height="20" aria-hidden="true"><use href="#i-search"/></svg>
+      <label for="q" class="sr">Поиск по каталогу</label>
+      <input id="q" type="search" placeholder="Название, улица, год…" autocomplete="off" enterkeyhint="search">
+      <button class="clear hidden" id="qClear" aria-label="Очистить поиск"><svg width="18" height="18"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="chips" id="chips" role="group" aria-label="Фильтр каталога"></div>
     <div id="list"></div>
   </section>
 </main>
 
-<nav>
-  <button id="tScan" class="on"><span>📷</span>Сканер</button>
-  <button id="tCat"><span>📜</span>Каталог</button>
+<nav class="nav" aria-label="Разделы">
+  <div class="nav-in" role="tablist">
+    <button role="tab" id="tab-scan" aria-controls="scan" aria-selected="true"><svg width="20" height="20"><use href="#i-scan"/></svg>Сканер</button>
+    <button role="tab" id="tab-cat" aria-controls="catalog" aria-selected="false"><svg width="20" height="20"><use href="#i-book"/></svg>Каталог</button>
+  </div>
 </nav>
 
-<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
+<div class="scrim" id="scrim" aria-hidden="true">
+  <article class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="cTitle" tabindex="-1"></article>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.5/dist/teachablemachine-image.min.js"></script>
 <script src="data.js"></script>
 <script>
+"use strict";
 const $ = id => document.getElementById(id);
-const BY_ID = Object.fromEntries(ALL_OBJECTS.map(o => [o.id, o]));   // распознаём ВСЕ объекты
-const ICON = { monument: "🗿", building: "🏛", street: "🪧", place: "📍" };
-const THRESH = 0.85, STABLE = 4;
-let model = null, stream = null, running = false, busy = false, lastId = null, streak = 0, modalOpen = false;
+const BY_ID = Object.fromEntries(ALL_OBJECTS.map(o => [o.id, o]));
+const THRESH = 0.85, STABLE = 4, PHOTO_THRESH = 0.6;
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ico = (id, s = 20) => `<svg width="${s}" height="${s}" aria-hidden="true"><use href="#${id}"/></svg>`;
+const typeIco = (o, s = 22) => `<span class="ti ${o.type === "street" ? "street" : ""}" aria-hidden="true">${ico("t-" + o.type, s)}</span>`;
+const isDesktop = () => matchMedia("(min-width:1024px)").matches;
 
-// ---- просмотренные (локально, необязательно) ----
-let seen = new Set();
-try { seen = new Set(JSON.parse(localStorage.getItem("seen") || "[]")); } catch (e) {}
-function markSeen(id){ seen.add(id); try{ localStorage.setItem("seen", JSON.stringify([...seen])); }catch(e){} renderProgress(); renderList(); }
-function renderProgress(){
-  const s = OBJECTS.filter(o => seen.has(o.id)).length;
-  $("prog").innerHTML = `🏅 Изучено: <b>${s} из ${OBJECTS.length}</b> · ` + Object.entries(ZONES).map(([k,v]) => `${v}: ${OBJECTS.filter(o=>o.zone===k).length}`).join(", ");
+let model = null, stream = null, running = false, busy = false, lastId = null, streak = 0;
+let photoURL = null, cardOpen = false, lastFocus = null, loopTimer = null;
+
+/* ---------- прогресс (localStorage, порядок = история изучения) ---------- */
+let seen = [];
+try { seen = JSON.parse(localStorage.getItem("seen") || "[]").filter(id => BY_ID[id]); } catch (e) {}
+const isSeen = id => seen.includes(id);
+function markSeen(id) {
+  seen = seen.filter(x => x !== id); seen.push(id);
+  try { localStorage.setItem("seen", JSON.stringify(seen)); } catch (e) {}
+  renderProgress(); renderRecent(); renderList();
+}
+function renderProgress() {
+  const done = OBJECTS.filter(o => isSeen(o.id)).length, total = OBJECTS.length;
+  $("ringTxt").textContent = `${done}/${total}`;
+  $("ringArc").setAttribute("stroke-dashoffset", (94.25 * (1 - done / Math.max(total, 1))).toFixed(2));
+  $("ring").setAttribute("aria-label", `Изучено ${done} из ${total} объектов проекта`);
+}
+function renderRecent() {
+  const ids = seen.slice(-6).reverse();
+  $("recent").innerHTML = ids.length
+    ? `<div class="recent">${ids.map(id => { const o = BY_ID[id]; return `<button class="rchip" data-id="${o.id}">${typeIco(o, 18)}<span><b>${esc(o.name)}</b><small>${esc(ZONE_NAMES[o.zone])}</small></span></button>`; }).join("")}</div>`
+    : `<div class="empty-mini">Здесь появятся объекты, которые вы распознаете или откроете в каталоге.</div>`;
+  $("recent").querySelectorAll(".rchip").forEach(b => b.onclick = () => openCard(b.dataset.id));
 }
 
-// ---- вкладки ----
-function tab(scan){
-  $("scan").classList.toggle("hidden", !scan); $("cat").classList.toggle("hidden", scan);
-  $("tScan").classList.toggle("on", scan); $("tCat").classList.toggle("on", !scan);
-  if (!scan && running) stopCam();
-  window.scrollTo(0, 0);
+/* ---------- состояния экрана сканера ---------- */
+const STATES = {
+  loading:  { pill: "Загрузка модели…", spin: true },
+  idle:     { pill: "Готов к сканированию" },
+  camera:   { pill: "Сканирую" },
+  analyzing:{ pill: "Анализ фото…", spin: true },
+  found:    { pill: "Объект распознан" },
+  nomatch:  { pill: "Не распознано" },
+  error:    { pill: "Ошибка" },
+};
+function setState(s, opts = {}) {
+  const vp = $("vp"); vp.dataset.state = s;
+  $("pillTxt").textContent = opts.pill || STATES[s].pill;
+  $("pillDot").className = STATES[s].spin ? "spin" : "dot";
+  const live = s === "camera" || s === "analyzing" || s === "found" || s === "nomatch";
+  $("meter").classList.toggle("hidden", !(s === "camera" || s === "analyzing"));
+  $("vpClose").classList.toggle("hidden", !(s === "nomatch" || (s === "found" && !running && photoURL)));
+  const c = $("center");
+  if (s === "loading") c.innerHTML = centerHTML("i-hist", "Подготавливаем модель", "Загружаем нейросеть Teachable Machine. Это занимает несколько секунд.");
+  else if (s === "idle") c.innerHTML = centerHTML("i-scan", "Наведите камеру на объект", "Памятник, здание или табличка улицы — и откроется их история.");
+  else if (s === "nomatch") c.innerHTML = centerHTML("i-alert", "Объект не распознан", opts.text || "Попробуйте другой ракурс: объект в центре, без людей в кадре.", `<button class="btn btn-light" data-act="photo">${ico("i-img")}Другое фото</button><button class="btn btn-line" data-act="reset">Сбросить</button>`);
+  else if (s === "error") c.innerHTML = centerHTML("i-alert", opts.title || "Что-то пошло не так", opts.text || "", opts.actions || "");
+  else c.innerHTML = "";
+  c.classList.toggle("hidden", live && s !== "nomatch");
+  c.querySelectorAll("[data-act]").forEach(b => b.onclick = () => ACTIONS[b.dataset.act]());
+  updateCamBtn();
 }
-$("tScan").onclick = () => tab(true);
-$("tCat").onclick = () => tab(false);
+function centerHTML(icon, title, text, acts = "") {
+  return `<div><div class="glyph">${ico(icon, 26)}</div><h2>${esc(title)}</h2><p>${esc(text)}</p>${acts ? `<div class="acts">${acts}</div>` : ""}</div>`;
+}
+const ACTIONS = {
+  photo: () => $("photoIn").click(),
+  reset: () => resetView(),
+  retry: () => loadModel(),
+  reload: () => location.reload(),
+  modelfiles: () => $("modelIn").click(),
+};
+function updateCamBtn() {
+  const b = $("camBtn");
+  b.disabled = !model;
+  b.setAttribute("aria-pressed", running ? "true" : "false");
+  $("camTxt").textContent = running ? "Остановить" : "Сканировать";
+  $("camIco").innerHTML = `<use href="#${running ? "i-stop" : "i-cam"}"/>`;
+}
 
-// ---- каталог: сначала проспекты проекта, ниже «Другие» ----
-let zone = "all";
-function renderChips(){
-  const z = { all: "Проект", ...ZONES, other: "Другие" };
-  $("chips").innerHTML = Object.entries(z).map(([k,v]) => `<button class="chip ${k===zone?"on":""}" data-z="${k}">${v}</button>`).join("");
-  $("chips").querySelectorAll("button").forEach(b => b.onclick = () => { zone = b.dataset.z; renderChips(); renderList(); });
-}
-const itemHTML = o => `<div class="item" data-id="${o.id}"><div class="ico">${ICON[o.type]}</div><div><b>${o.name}</b><small>${TYPES[o.type]} · ${ZONE_NAMES[o.zone]}</small></div>${seen.has(o.id)?'<span class="seen">✓</span>':""}</div>`;
-function renderList(){
-  let html = "";
-  if (zone === "other") html = OTHER_OBJECTS.map(itemHTML).join("");
-  else {
-    const zs = zone === "all" ? Object.keys(ZONES) : [zone];
-    html = zs.map(z => `<div class="sect">${ZONES[z]}</div>` + OBJECTS.filter(o => o.zone === z).map(itemHTML).join("")).join("");
+/* ---------- модель ---------- */
+async function loadModel() {
+  if (!window.tmImage) {
+    setState("error", { title: "Нет подключения к интернету", text: "Библиотеки ИИ не загрузились. Каталог доступен офлайн, а для распознавания нужен интернет.", actions: `<button class="btn btn-light" data-act="reload">${ico("i-refresh")}Обновить</button>` });
+    return;
   }
-  $("list").innerHTML = html;
-  $("list").querySelectorAll(".item").forEach(el => el.onclick = () => openCard(el.dataset.id));
-}
-
-// ---- карточка ----
-function openCard(id, prob){
-  const o = BY_ID[id]; if(!o) return;
-  modalOpen = true;
-  if (prob && navigator.vibrate) navigator.vibrate(60);
-  $("sheet").innerHTML = `
-    <div class="grab"></div>
-    <span class="tag">${TYPES[o.type]}</span><span class="tag" style="background:var(--accent)">${ZONE_NAMES[o.zone]}</span>
-    <h2>${o.name}</h2><div class="kk">${o.nameKk}</div>
-    ${prob ? `<div class="conf">ИИ распознал с уверенностью ${(prob*100).toFixed(0)}%</div>` : ""}
-    <div class="meta">
-      <span>📍 Где</span><span>${o.place}</span>
-      <span>📅 Год</span><span>${o.year}</span>
-      ${o.oldNames ? `<span>🕰 Названия</span><span>${o.oldNames}</span>` : ""}
-    </div>
-    <p>${o.text}</p>
-    <button class="btn" id="closeBtn" style="width:100%">${running ? "Сканировать дальше" : "Закрыть"}</button>
-    <div class="warn">Данные собраны из открытых источников и требуют проверки по краеведческому музею.</div>`;
-  $("modal").classList.add("show");
-  $("sheet").scrollTop = 0;
-  $("closeBtn").onclick = closeCard;
-  markSeen(id);
-}
-function closeCard(){ $("modal").classList.remove("show"); modalOpen = false; streak = 0; lastId = null; }
-$("modal").onclick = e => { if (e.target.id === "modal") closeCard(); };
-// свайп вниз закрывает карточку
-let ty = null;
-$("sheet").addEventListener("touchstart", e => { ty = $("sheet").scrollTop <= 0 ? e.touches[0].clientY : null; }, {passive:true});
-$("sheet").addEventListener("touchend", e => { if (ty !== null && e.changedTouches[0].clientY - ty > 90) closeCard(); ty = null; }, {passive:true});
-
-// ---- модель ----
-function modelReady(m, src){
-  model = m;
-  const labels = m.getClassLabels ? m.getClassLabels() : [];
-  const unknown = labels.filter(l => !BY_ID[l] && l !== "fon");
-  $("status").textContent = `Модель загружена (${src}): классов ${labels.length}.` + (unknown.length ? ` ⚠ Нет в базе: ${unknown.join(", ")}` : "");
-  $("modelRow").classList.add("hidden");
-  $("hint").textContent = "Готово. Нажмите «Сканировать»";
-}
-async function autoLoad(){
-  try { modelReady(await tmImage.load("model/model.json", "model/metadata.json"), "папка model/"); }
-  catch (e) {
-    $("modelRow").classList.remove("hidden");
-    $("hint").textContent = "Модель не найдена";
-    $("status").textContent = "Модель не найдена в папке model/. Загрузите 3 файла из Teachable Machine. Каталог работает и без модели.";
+  setState("loading");
+  try {
+    model = await tmImage.load("model/model.json", "model/metadata.json");
+    setState("idle");
+  } catch (e) {
+    model = null;
+    setState("error", { title: "Модель не загрузилась", text: "Проверьте интернет и попробуйте ещё раз. Можно загрузить файлы модели вручную.", actions: `<button class="btn btn-light" data-act="retry">${ico("i-refresh")}Повторить</button><button class="btn btn-line" data-act="modelfiles">${ico("i-upload")}Файлы модели</button>` });
   }
 }
 $("modelIn").onchange = async e => {
   const f = [...e.target.files], get = n => f.find(x => x.name.toLowerCase().includes(n));
   const mj = get("model.json"), wb = get(".bin"), md = get("metadata");
-  if (!mj || !wb || !md) { $("status").textContent = "Нужны все 3 файла: model.json, weights.bin, metadata.json"; return; }
-  try { modelReady(await tmImage.loadFromFiles(mj, wb, md), "из файлов"); }
-  catch (err) { $("status").textContent = "Ошибка загрузки модели: " + err.message; }
+  e.target.value = "";
+  if (!mj || !wb || !md) { toast("Нужны три файла: model.json, weights.bin, metadata.json"); return; }
+  setState("loading");
+  try { model = await tmImage.loadFromFiles(mj, wb, md); setState("idle"); toast("Модель загружена из файлов"); }
+  catch (err) { setState("error", { title: "Файлы модели не подошли", text: err.message, actions: `<button class="btn btn-light" data-act="retry">${ico("i-refresh")}Загрузить снова</button>` }); }
 };
-
-// ---- распознавание ----
-async function classify(el){
+async function classify(el) {
   const preds = await model.predict(el);
-  preds.sort((a,b) => b.probability - a.probability);
+  preds.sort((a, b) => b.probability - a.probability);
   return preds[0];
 }
-function showTop(top){
-  const o = BY_ID[top.className];
-  $("barFill").style.width = (top.probability*100) + "%";
-  $("hint").textContent = o ? `${o.name} — ${(top.probability*100).toFixed(0)}%` : "Ищу объект…";
+function showMeter(top) {
+  const o = BY_ID[top.className], p = Math.round(top.probability * 100);
+  $("mBar").style.width = (o ? p : 0) + "%";
+  $("mPct").textContent = o ? p + "%" : "—";
+  $("mName").textContent = o && top.probability >= 0.4 ? o.name : "Ищу объект в рамке";
 }
-async function loop(){
-  if (!running) return;
-  if (model && !modalOpen && !busy && $("video").readyState >= 2) {
-    busy = true;
-    try {
-      const top = await classify($("video"));
-      showTop(top);
-      if (BY_ID[top.className] && top.probability >= THRESH) {
-        streak = top.className === lastId ? streak + 1 : 1; lastId = top.className;
-        if (streak >= STABLE) openCard(top.className, top.probability);
-      } else { streak = 0; lastId = null; }
-    } finally { busy = false; }
+
+/* ---------- камера ---------- */
+async function startCam() {
+  if (!model || running) return;
+  clearPhoto();
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    camError({ name: window.isSecureContext ? "NotFoundError" : "InsecureError" }); return;
   }
-  setTimeout(() => requestAnimationFrame(loop), 180);
-}
-function stopCam(){
-  running = false; stream && stream.getTracks().forEach(t => t.stop()); stream = null;
-  $("camBtn").textContent = "▶ Сканировать"; $("cam").classList.remove("scanning");
-  $("idle").classList.remove("hidden");
-}
-$("camBtn").onclick = async () => {
-  if (running) { stopCam(); return; }
-  if (!model) { $("status").textContent = "Сначала нужна модель. Пока можно смотреть Каталог."; return; }
   try {
     stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
-    $("photo").classList.add("hidden"); $("idle").classList.add("hidden"); $("video").classList.remove("hidden");
-    $("video").srcObject = stream; await $("video").play();
-    running = true; $("camBtn").textContent = "⏸ Стоп"; $("cam").classList.add("scanning"); loop();
-  } catch (e) {
-    $("status").textContent = "Камера недоступна: " + e.message + ". Откройте сайт в Chrome/Safari по https-ссылке (не из мессенджера).";
-  }
-};
-// экономим батарею: свернули приложение — камера выключается
-document.addEventListener("visibilitychange", () => { if (document.hidden && running) stopCam(); });
-
-$("photoIn").onchange = e => {
-  const file = e.target.files[0]; if (!file) return;
-  if (!model) { $("status").textContent = "Сначала загрузите модель."; return; }
-  if (running) stopCam();
-  const img = $("photo");
-  img.onload = async () => {
-    const top = await classify(img); showTop(top);
-    if (BY_ID[top.className] && top.probability >= 0.6) openCard(top.className, top.probability);
-    else $("hint").textContent = "Объект не распознан. Попробуйте другой ракурс.";
+    const v = $("video"); v.srcObject = stream; v.classList.remove("hidden");
+    await v.play();
+    running = true; streak = 0; lastId = null;
+    setState("camera"); showMeter({ className: "", probability: 0 });
+    loop();
+  } catch (e) { stopCam(); camError(e); }
+}
+function camError(e) {
+  const map = {
+    NotAllowedError: ["Нет доступа к камере", "Разрешите доступ к камере в настройках браузера для этого сайта или распознайте фото из галереи."],
+    NotFoundError: ["Камера не найдена", "На этом устройстве нет доступной камеры. Выберите фото из галереи."],
+    NotReadableError: ["Камера занята", "Камеру использует другое приложение. Закройте его и попробуйте снова."],
+    InsecureError: ["Нужна защищённая ссылка", "Камера работает только по https. Откройте сайт по ссылке github.io в Chrome или Safari."],
   };
-  img.src = URL.createObjectURL(file);
-  img.classList.remove("hidden"); $("idle").classList.add("hidden"); $("video").classList.add("hidden");
-  e.target.value = "";
-};
+  const [t, x] = map[e && e.name] || ["Камера недоступна", "Откройте сайт в Chrome или Safari (не во встроенном браузере мессенджера) или выберите фото."];
+  setState("error", { title: t, text: x, actions: `<button class="btn btn-light" data-act="photo">${ico("i-img")}Выбрать фото</button><button class="btn btn-line" data-act="reset">Назад</button>` });
+}
+function stopCam() {
+  running = false; clearTimeout(loopTimer);
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  stream = null;
+  const v = $("video"); v.pause(); v.srcObject = null; v.classList.add("hidden");
+  updateCamBtn();
+}
+async function loop() {
+  if (!running) return;
+  const v = $("video");
+  if (model && !cardOpen && !busy && v.readyState >= 2) {
+    busy = true;
+    try {
+      const top = await classify(v);
+      if (!running) return;
+      showMeter(top);
+      if (BY_ID[top.className] && top.probability >= THRESH) {
+        streak = top.className === lastId ? streak + 1 : 1; lastId = top.className;
+        if (streak >= STABLE) { setState("found"); openCard(top.className, top.probability); }
+      } else { streak = 0; lastId = null; }
+    } catch (e) {} finally { busy = false; }
+  }
+  loopTimer = setTimeout(() => requestAnimationFrame(loop), 160);
+}
+$("camBtn").onclick = () => running ? (stopCam(), setState(model ? "idle" : "loading")) : startCam();
 
-renderProgress(); renderChips(); renderList();
-if (window.tmImage) autoLoad(); else { $("hint").textContent = "Нет интернета"; $("status").textContent = "Библиотеки ИИ не загрузились. Каталог работает."; }
+/* ---------- фото из галереи ---------- */
+function clearPhoto() {
+  if (photoURL) { URL.revokeObjectURL(photoURL); photoURL = null; }
+  const s = $("shot"); s.removeAttribute("src"); s.classList.add("hidden");
+}
+function resetView() { if (running) stopCam(); clearPhoto(); setState(model ? "idle" : "loading"); if (!model) loadModel(); }
+$("photoLbl").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("photoIn").click(); } });
+$("photoIn").onchange = e => {
+  const file = e.target.files[0]; e.target.value = "";
+  if (!file) return;
+  if (!model) { toast("Модель ещё не загружена"); return; }
+  if (running) stopCam();
+  clearPhoto();
+  photoURL = URL.createObjectURL(file);
+  const img = $("shot");
+  setState("analyzing"); showMeter({ className: "", probability: 0 });
+  img.onerror = () => { clearPhoto(); setState("error", { title: "Не удалось открыть файл", text: "Выберите изображение в формате JPG или PNG.", actions: `<button class="btn btn-light" data-act="photo">${ico("i-img")}Выбрать другое</button>` }); };
+  img.onload = async () => {
+    img.classList.remove("hidden");
+    try {
+      const top = await classify(img); showMeter(top);
+      if (BY_ID[top.className] && top.probability >= PHOTO_THRESH) { setState("found"); openCard(top.className, top.probability); }
+      else setState("nomatch", { text: top.className === "fon" ? "На фото не видно объектов из коллекции. Снимите объект крупнее, в центре кадра." : "Модель не уверена. Попробуйте другой ракурс: объект в центре, без людей в кадре." });
+    } catch (err) { setState("error", { title: "Ошибка распознавания", text: err.message, actions: `<button class="btn btn-light" data-act="reset">Назад</button>` }); }
+  };
+  img.src = photoURL;
+};
+$("vpClose").onclick = resetView;
+
+/* ---------- каталог ---------- */
+const FILTERS = [
+  { id: "all", label: "Проект", test: o => o.zone in ZONES },
+  ...Object.entries(ZONES).map(([k, v]) => ({ id: k, label: v, test: o => o.zone === k })),
+  { id: "seen", label: "Изученные", test: o => isSeen(o.id) },
+  { id: "other", label: "Другие", test: o => !(o.zone in ZONES) },
+];
+let filter = "all", query = "";
+const norm = s => String(s || "").toLowerCase().replace(/ё/g, "е");
+function renderChips() {
+  $("chips").innerHTML = FILTERS.map(f => `<button class="chip" data-f="${f.id}" aria-pressed="${f.id === filter}">${esc(f.label)}<span class="n">${ALL_OBJECTS.filter(f.test).length}</span></button>`).join("");
+  $("chips").querySelectorAll(".chip").forEach(b => b.onclick = () => { filter = b.dataset.f; renderChips(); renderList(); });
+}
+function itemHTML(o) {
+  const done = isSeen(o.id);
+  return `<button class="item" data-id="${o.id}" aria-label="${esc(o.name)}${done ? ", изучено" : ""}">
+    ${typeIco(o)}
+    <span><b>${esc(o.name)}</b><span class="kk">${esc(o.nameKk)}</span><span class="meta">${esc(TYPES[o.type])}${o.year && o.year !== "—" ? " · " + esc(o.year) : ""}</span></span>
+    <span class="badge ${done ? "on" : ""}" aria-hidden="true">${ico("i-check", 16)}</span>
+  </button>`;
+}
+function renderList() {
+  const f = FILTERS.find(x => x.id === filter);
+  const q = norm(query.trim());
+  const match = o => !q || [o.name, o.nameKk, o.place, o.year, o.oldNames, o.text].some(v => norm(v).includes(q));
+  const items = ALL_OBJECTS.filter(f.test).filter(match);
+  $("qClear").classList.toggle("hidden", !query);
+  if (!items.length) {
+    const byQuery = !!q;
+    $("list").innerHTML = `<div class="nores">${ico(byQuery ? "i-search" : "i-book", 28)}<b>${byQuery ? "Ничего не найдено" : "Пока пусто"}</b><p>${byQuery ? `По запросу «${esc(query.trim())}» в разделе «${esc(f.label)}» нет объектов.` : "Распознайте объект или откройте карточку в каталоге — он появится здесь."}</p>${byQuery ? `<button class="btn btn-ghost" id="resetQ">Сбросить поиск</button>` : ""}</div>`;
+    const r = $("resetQ"); if (r) r.onclick = () => { query = ""; $("q").value = ""; filter = "all"; renderChips(); renderList(); $("q").focus(); };
+    return;
+  }
+  // группировка по зонам
+  const groups = {};
+  items.forEach(o => (groups[o.zone] = groups[o.zone] || []).push(o));
+  const order = [...Object.keys(ZONES), "center", "old"];
+  $("list").innerHTML = order.filter(z => groups[z]).map(z => {
+    const g = groups[z], d = g.filter(o => isSeen(o.id)).length;
+    return `<div class="group"><div class="ghead"><h3>${ico("i-pin", 16)}${esc(ZONE_NAMES[z])}</h3><span>${d}/${g.length} изучено</span></div><div class="list">${g.map(itemHTML).join("")}</div></div>`;
+  }).join("");
+  $("list").querySelectorAll(".item").forEach(el => el.onclick = () => openCard(el.dataset.id));
+}
+$("q").addEventListener("input", e => { query = e.target.value; renderList(); });
+$("qClear").onclick = () => { query = ""; $("q").value = ""; renderList(); $("q").focus(); };
+
+/* ---------- карточка ---------- */
+function openCard(id, prob) {
+  const o = BY_ID[id]; if (!o) return;
+  if (!cardOpen) lastFocus = document.activeElement;
+  cardOpen = true;
+  if (prob && navigator.vibrate) navigator.vibrate(60);
+  const fact = (icon, label, val, wide) => `<div class="fact ${wide ? "wide" : ""}"><dt>${ico(icon, 14)}${label}</dt><dd>${esc(val)}</dd></div>`;
+  $("sheet").innerHTML = `
+    <div class="sheet-top"><span class="grab" aria-hidden="true"></span>
+      <div class="tags"><span class="tag l">${ico("t-" + o.type, 14)}${esc(TYPES[o.type])}</span><span class="tag">${ico("i-pin", 14)}${esc(ZONE_NAMES[o.zone])}</span></div>
+      <button class="close" id="cClose" aria-label="Закрыть карточку">${ico("i-x")}</button>
+    </div>
+    <h2 id="cTitle">${esc(o.name)}</h2>
+    <p class="kkname" lang="kk">${esc(o.nameKk)}</p>
+    ${prob ? `<div class="conf">${ico("i-check", 16)}Распознано нейросетью · ${Math.round(prob * 100)}%</div>` : ""}
+    <svg class="orn" aria-hidden="true" viewBox="0 0 240 14" preserveAspectRatio="xMidYMid meet"><use href="#o-line"/></svg>
+    <dl class="facts">
+      ${fact("i-cal", "Год", o.year && o.year !== "—" ? o.year : "Не указан")}
+      ${fact("t-" + o.type, "Тип", TYPES[o.type])}
+      ${fact("i-pin", "Где", o.place || "—", true)}
+      ${o.oldNames ? fact("i-hist", "Названия", o.oldNames, true) : ""}
+    </dl>
+    <div class="story"><h3>История</h3><p>${esc(o.text)}</p></div>
+    <div class="note">${ico("i-info", 16)}<span>Сведения собраны из открытых источников (Центр охраны историко-культурного наследия Ақтөбе, местная пресса) и сверяются с краеведческим музеем.</span></div>
+    <button class="btn btn-primary" id="cDone">${running ? `${ico("i-scan")}Продолжить сканирование` : "Закрыть"}</button>`;
+  const scrim = $("scrim");
+  scrim.classList.add("show"); scrim.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  $("sheet").scrollTop = 0;
+  $("cClose").onclick = closeCard; $("cDone").onclick = closeCard;
+  setTimeout(() => $("cClose").focus({ preventScroll: true }), 30);
+  markSeen(id);
+}
+function closeCard() {
+  if (!cardOpen) return;
+  cardOpen = false; streak = 0; lastId = null;
+  const scrim = $("scrim");
+  scrim.classList.remove("show"); scrim.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+  const st = $("vp").dataset.state;
+  if (running) setState("camera");
+  else if (st === "found" && photoURL) { /* оставляем фото с отметкой «распознано» */ }
+  if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
+}
+$("scrim").addEventListener("click", e => { if (e.target.id === "scrim") closeCard(); });
+document.addEventListener("keydown", e => {
+  if (!cardOpen) return;
+  if (e.key === "Escape") { e.preventDefault(); closeCard(); }
+  if (e.key === "Tab") { // удержание фокуса внутри карточки
+    const f = [...$("sheet").querySelectorAll("button,[href],[tabindex]:not([tabindex='-1'])")];
+    if (!f.length) return;
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+});
+// свайп вниз закрывает карточку
+let ty = null;
+$("sheet").addEventListener("touchstart", e => { ty = $("sheet").scrollTop <= 0 ? e.touches[0].clientY : null; }, { passive: true });
+$("sheet").addEventListener("touchend", e => { if (ty !== null && e.changedTouches[0].clientY - ty > 90) closeCard(); ty = null; }, { passive: true });
+
+/* ---------- вкладки ---------- */
+function tab(name) {
+  const scan = name === "scan";
+  $("tab-scan").setAttribute("aria-selected", scan); $("tab-cat").setAttribute("aria-selected", !scan);
+  $("scan").hidden = !scan; $("catalog").hidden = scan;
+  if (!scan && running && !isDesktop()) { stopCam(); setState("idle"); }
+  window.scrollTo(0, 0);
+}
+$("tab-scan").onclick = () => tab("scan");
+$("tab-cat").onclick = () => tab("cat");
+document.querySelector(".nav-in").addEventListener("keydown", e => {
+  if (e.key === "ArrowRight" || e.key === "ArrowLeft") { const t = $("tab-scan").getAttribute("aria-selected") === "true" ? "cat" : "scan"; tab(t); $(t === "scan" ? "tab-scan" : "tab-cat").focus(); }
+});
+
+/* ---------- служебное ---------- */
+let toastT;
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 2600); }
+document.addEventListener("visibilitychange", () => { if (document.hidden && running) { stopCam(); setState("idle"); } });
+window.addEventListener("pagehide", () => { stopCam(); clearPhoto(); });
+window.addEventListener("scroll", () => $("top").classList.toggle("scrolled", scrollY > 4), { passive: true });
+
+/* ---------- ссылки: #catalog открывает каталог, #obj=<id> — карточку ---------- */
+function applyHash() {
+  const h = decodeURIComponent(location.hash.slice(1));
+  if (h === "catalog") tab("cat");
+  const m = h.match(/^obj=([\w-]+)$/);
+  if (m && BY_ID[m[1]]) openCard(m[1]);
+}
+window.addEventListener("hashchange", applyHash);
+
+renderProgress(); renderRecent(); renderChips(); renderList();
+applyHash();
+loadModel();
 </script>
 </body>
 </html>
