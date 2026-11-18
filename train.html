@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ULY MURA SCAN · Модельді оқыту</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+:root{--paper:#F3EEE4;--card:#FBF8F2;--line:#DDD3C1;--ink:#17202B;--muted:#675F53;--lapis:#0A6B76;--ok:#2C7A4B;--err:#B3261E}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:760px;margin:0 auto;padding:24px 16px 48px}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 20px}
+.step{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
+.step h2{font-size:16px;margin:0 0 6px}
+.step p{margin:0 0 10px;color:var(--muted);font-size:14px}
+label.pick{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:600}
+label.pick input{display:none}
+button{min-height:48px;padding:0 20px;border:0;border-radius:12px;background:var(--ink);color:var(--paper);font:inherit;font-weight:700;cursor:pointer}
+button[disabled]{opacity:.45;cursor:not-allowed}
+.info{font-size:13.5px;color:var(--muted);margin-top:8px}
+pre{background:#11151B;color:#d8e3e6;border-radius:12px;padding:12px;font-size:12.5px;max-height:220px;overflow:auto;white-space:pre-wrap}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.good{color:var(--ok);font-weight:700}.bad{color:var(--err);font-weight:700}
+:focus-visible{outline:3px solid var(--lapis);outline-offset:2px}
+</style>
+</head>
+<body>
+<main>
+  <h1>Модельді оқыту</h1>
+  <p class="sub">ULY MURA SCAN үшін тану моделін өз суреттеріміз бойынша браузерде оқыту. Ешқандай сыртқы ЖИ қызметі қолданылмайды: TensorFlow.js ашық кітапханасы мен MobileNet нейрожелісі ғана.</p>
+
+  <section class="step">
+    <h2>1. Оқыту суреттері</h2>
+    <p><b>dataset</b> папкасын таңдаңыз. Ішіндегі әр папка — бір нысан (атауы класс аты, мысалы <code>abulkhair</code>). «_» белгісінен басталатын папкалар есепке алынбайды.</p>
+    <label class="pick">Папка таңдау<input type="file" id="trainIn" webkitdirectory multiple></label>
+    <div class="info" id="trainInfo">Папка таңдалмаған</div>
+  </section>
+
+  <section class="step">
+    <h2>2. Тексеру суреттері (міндетті емес)</h2>
+    <p>Оқытуға кірмеген суреттер. Класс атауы папкадан немесе файл атауының басынан алынады: <code>sankibai__1.jpg</code>.</p>
+    <label class="pick">Папка таңдау<input type="file" id="testIn" webkitdirectory multiple></label>
+    <div class="info" id="testInfo">Таңдалмаған</div>
+  </section>
+
+  <section class="step">
+    <h2>3. Оқыту</h2>
+    <p>Әр суреттен 4 нұсқа жасалады (түпнұсқа, айна, жақындату, жылжыту), содан кейін жіктеуіш үйретіледі.</p>
+    <button id="go" disabled>Оқытуды бастау</button>
+    <pre id="log">Дайын.</pre>
+  </section>
+
+  <section class="step" id="res" hidden>
+    <h2>4. Нәтиже</h2>
+    <div id="table"></div>
+    <p style="margin-top:12px">Файлды <code>app/model/classifier.json</code> орнына салыңыз.</p>
+    <button id="save">classifier.json жүктеп алу</button>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<script src="ml.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const log = m => { $("log").textContent += "\n" + m; $("log").scrollTop = 1e9; };
+const isImg = f => /\.(jpe?g|png|webp|bmp)$/i.test(f.name);
+let trainFiles = [], testFiles = [];
+
+function classOf(f, flat) {
+  const parts = (f.webkitRelativePath || f.name).split("/");
+  if (parts.length >= 3 && !flat) return parts[parts.length - 2];
+  const m = f.name.match(/^(.+?)__/); return m ? m[1] : (parts.length >= 3 ? parts[parts.length - 2] : null);
+}
+function group(files, flat) {
+  const g = {};
+  files.filter(isImg).forEach(f => {
+    const c = classOf(f, flat);
+    if (!c || c.startsWith("_")) return;
+    (g[c] = g[c] || []).push(f);
+  });
+  return g;
+}
+const summary = g => Object.entries(g).map(([c, a]) => `${c}: ${a.length}`).join(" · ");
+
+$("trainIn").onchange = e => { trainFiles = [...e.target.files]; const g = group(trainFiles); $("trainInfo").textContent = Object.keys(g).length ? `${Object.keys(g).length} класс — ${summary(g)}` : "Суреттері бар ішкі папкалар табылмады"; $("go").disabled = Object.keys(g).length < 2; };
+$("testIn").onchange = e => { testFiles = [...e.target.files]; const g = group(testFiles, true); $("testInfo").textContent = summary(g) || "Сурет табылмады"; };
+
+function loadImg(file) {
+  return new Promise((res, rej) => { const url = URL.createObjectURL(file), img = new Image(); img.onload = () => res({ img, url }); img.onerror = () => { URL.revokeObjectURL(url); rej(new Error(file.name)); }; img.src = url; });
+}
+const AUG = [{}, { flip: true }, { zoom: 0.8 }, { zoom: 0.85, dx: 0.06, dy: -0.04 }];
+
+$("go").onclick = async () => {
+  $("go").disabled = true; $("log").textContent = "MobileNet жүктелуде…";
+  await ML.loadBase();
+  const g = group(trainFiles), labels = Object.keys(g).sort((a, b) => a === "fon" ? -1 : b === "fon" ? 1 : a.localeCompare(b));
+  const X = [], y = []; let n = 0;
+  for (const [ci, c] of labels.entries()) {
+    for (const f of g[c]) {
+      try {
+        const { img, url } = await loadImg(f);
+        for (const a of AUG) { const v = ML.embed(img, a); X.push(Array.from(await v.data())); y.push(ci); v.dispose(); }
+        URL.revokeObjectURL(url); n++;
+      } catch (err) { log("Оқылмады: " + err.message); }
+    }
+    log(`${c}: ${g[c].length} сурет өңделді`);
+  }
+  log(`Барлығы ${n} сурет, ${X.length} мысал. Жіктеуіш оқытылуда…`);
+  const { W, b } = await ML.train(X, y, labels.length, { onEpoch: (e, l) => log(`эпоха ${e}: қате ${l.toFixed(4)}`) });
+  const clf = ML.makeClassifier({ labels, W, b }); window.__clf = clf;
+  const result = { name: "ULY MURA SCAN classifier", base: "mobilenet_v1_0.25_224 / global_average_pooling2d_1", labels, W, b,
+    trained: new Date().toISOString().slice(0, 10), images: Object.fromEntries(labels.map(c => [c, g[c].length])) };
+
+  // тексеру
+  const tg = group(testFiles, true), rows = []; let ok = 0, tot = 0;
+  for (const c of Object.keys(tg).sort()) {
+    let hit = 0;
+    for (const f of tg[c]) { const { img, url } = await loadImg(f); const top = (await clf.predict(img))[0]; URL.revokeObjectURL(url); if (top.className === c) hit++; }
+    ok += hit; tot += tg[c].length; rows.push([c, hit, tg[c].length]);
+  }
+  if (tot) result.test = { correct: ok, total: tot, perClass: Object.fromEntries(rows.map(r => [r[0], [r[1], r[2]]])) };
+  window.__result = result;
+  $("table").innerHTML = `<table><tr><th>Класс</th><th class="n">Оқыту суреті</th>${tot ? '<th class="n">Тексеру</th>' : ""}</tr>` +
+    labels.map(c => { const r = rows.find(x => x[0] === c); return `<tr><td>${c}</td><td class="n">${g[c].length}</td>${tot ? `<td class="n ${r && r[1] === r[2] ? "good" : "bad"}">${r ? r[1] + " / " + r[2] : "—"}</td>` : ""}</tr>`; }).join("") +
+    (tot ? `<tr><th>Дәлдік</th><th></th><th class="n">${ok} / ${tot} (${Math.round(ok / tot * 100)}%)</th></tr>` : "") + "</table>";
+  $("res").hidden = false; $("go").disabled = false;
+  log(tot ? `Тексеру дәлдігі: ${ok}/${tot}` : "Дайын.");
+};
+$("save").onclick = () => {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(window.__result)], { type: "application/json" }));
+  a.download = "classifier.json"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+};
+</script>
+</body>
+</html>

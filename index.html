@@ -333,8 +333,7 @@ svg{display:block;flex:none}
       </label>
     </div>
     <div class="tip"><svg width="18" height="18"><use href="#i-info"/></svg><span data-i18n="tip"></span></div>
-    <input type="file" id="modelIn" multiple accept=".json,.bin" class="sr" tabindex="-1">
-
+    
     <div class="eyebrow" data-i18n="recent"></div>
     <div id="recent"></div>
   </section>
@@ -368,15 +367,15 @@ svg{display:block;flex:none}
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.5/dist/teachablemachine-image.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<script src="ml.js"></script>
 <script src="data.js"></script>
 <script src="i18n.js"></script>
 <script>
 "use strict";
 const $ = id => document.getElementById(id);
 const BY_ID = Object.fromEntries(ALL_OBJECTS.map(o => [o.id, o]));
-const THRESH = 0.85, STABLE = 4, PHOTO_THRESH = 0.6;
+const THRESH = 0.8, STABLE = 4, PHOTO_THRESH = 0.55;
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const ico = (id, s = 20) => `<svg width="${s}" height="${s}" aria-hidden="true"><use href="#${id}"/></svg>`;
 const typeIco = (o, s = 22) => `<span class="ti ${o.type === "street" ? "street" : ""}" aria-hidden="true">${ico("t-" + o.type, s)}</span>`;
@@ -478,7 +477,7 @@ function centerHTML(icon, title, text, acts = []) {
 }
 const ACTIONS = {
   photo: () => $("photoIn").click(), reset: () => resetView(), retry: () => loadModel(),
-  reload: () => location.reload(), modelfiles: () => $("modelIn").click(),
+  reload: () => location.reload(),
 };
 function updateCamBtn() {
   const b = $("camBtn");
@@ -490,25 +489,15 @@ function updateCamBtn() {
 
 /* ---------- модель ---------- */
 async function loadModel() {
-  if (!window.tmImage) { setState("error", { title: "noNetT", text: "noNetX", actions: [["reload", "i-refresh", "reload", "light"]] }); return; }
+  if (!window.tf || !window.ML) { setState("error", { title: "noNetT", text: "noNetX", actions: [["reload", "i-refresh", "reload", "light"]] }); return; }
   setState("loading");
-  try { model = await tmImage.load("model/model.json", "model/metadata.json"); setState("idle"); }
-  catch (e) { model = null; setState("error", { title: "modelErrT", text: "modelErrX", actions: [["retry", "i-refresh", "retry", "light"], ["modelfiles", "i-upload", "modelFiles", "line"]] }); }
+  try {
+    await ML.loadBase("model/mobilenet/model.json");
+    const json = await (await fetch("model/classifier.json", { cache: "no-cache" })).json();
+    model = ML.makeClassifier(json); setState("idle");
+  } catch (e) { model = null; setState("error", { title: "modelErrT", text: "modelErrX", actions: [["retry", "i-refresh", "retry", "light"]] }); }
 }
-$("modelIn").onchange = async e => {
-  const f = [...e.target.files], get = n => f.find(x => x.name.toLowerCase().includes(n));
-  const mj = get("model.json"), wb = get(".bin"), md = get("metadata");
-  e.target.value = "";
-  if (!mj || !wb || !md) { toast(t("modelFilesNeed")); return; }
-  setState("loading");
-  try { model = await tmImage.loadFromFiles(mj, wb, md); setState("idle"); toast(t("modelFilesOk")); }
-  catch (err) { setState("error", { title: "modelFilesBad", textRaw: err.message, actions: [["retry", "i-refresh", "loadAgain", "light"]] }); }
-};
-async function classify(el) {
-  const preds = await model.predict(el);
-  preds.sort((a, b) => b.probability - a.probability);
-  return preds[0];
-}
+async function classify(el) { return (await model.predict(el))[0]; }
 function showMeter(top) {
   const o = BY_ID[top.className], p = Math.round(top.probability * 100), hit = o && top.probability >= 0.4;
   $("mBar").style.width = (o ? p : 0) + "%";
