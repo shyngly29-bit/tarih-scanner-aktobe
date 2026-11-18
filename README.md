@@ -1,4 +1,4 @@
-# Тарих Сканер · Ақтөбе — инструкция
+# ULY MURA SCAN · Ақтөбе (бывш. «Тарих Сканер») — инструкция
 
 ИИ-платформа (единственная, п. 4.3 положения): **Google Teachable Machine** — https://teachablemachine.withgoogle.com (бесплатно).
 

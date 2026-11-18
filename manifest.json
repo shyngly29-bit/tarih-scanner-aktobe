@@ -1,13 +1,13 @@
 {
-  "name": "Тарих Сканер · Ақтөбе",
-  "short_name": "Тарих Сканер",
+  "name": "ULY MURA SCAN · Ақтөбе",
+  "short_name": "ULY MURA SCAN",
   "description": "Наведите камеру на памятник или табличку улицы Ақтөбе и узнайте его историю.",
   "lang": "ru",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#F3EEE4",
+  "background_color": "#17202B",
   "theme_color": "#F3EEE4",
   "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
 }
